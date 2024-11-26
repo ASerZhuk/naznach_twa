@@ -1,45 +1,53 @@
-'use client'
-
+import { GetServerSideProps } from 'next'
 import Container from './components/Container'
-import { useEffect, useState } from 'react'
 import Main from './components/Main'
 import { getUserById } from './actions/getUserById'
 import { AppRoot } from '@telegram-apps/telegram-ui'
 
-export default function Home() {
-	const [telegramId, setTelegramId] = useState<string>()
-	const [loading, setLoading] = useState(true)
-	const [user, setUser] = useState<any>(null)
+interface HomeProps {
+	user: any
+	loading: boolean
+}
 
-	useEffect(() => {
-		const tg = window.Telegram.WebApp
-		tg.ready()
-
-		const id = tg.initDataUnsafe?.user?.id.toString()
-		setTelegramId(id)
-	}, [])
-	useEffect(() => {
-		const fetchUser = async () => {
-			if (telegramId) {
-				try {
-					const userData = await getUserById(telegramId) // передаем идентификатор
-					setUser(userData)
-				} catch (error) {
-					console.error('Ошибка при загрузке пользователя:', error)
-				} finally {
-					setLoading(false)
-				}
-			}
-		}
-
-		fetchUser()
-	}, [telegramId])
-
+export default function Home({ user, loading }: HomeProps) {
 	return (
 		<AppRoot>
 			<Container>
-				<Main user={user} />
+				<Main user={user} loading={loading} />
 			</Container>
 		</AppRoot>
 	)
+}
+
+export const getServerSideProps: GetServerSideProps = async context => {
+	const telegramId = context.req.cookies['telegramId'] // или получаем из query, и т.д.
+
+	// Если нет telegramId, редиректим или возвращаем пустого пользователя
+	if (!telegramId) {
+		return {
+			redirect: {
+				destination: '/login',
+				permanent: false,
+			},
+		}
+	}
+
+	try {
+		// Получаем данные пользователя на сервере
+		const user = await getUserById(telegramId)
+		return {
+			props: {
+				user,
+				loading: false, // Данные уже получены, нет необходимости показывать loading
+			},
+		}
+	} catch (error) {
+		console.error('Ошибка при получении пользователя:', error)
+		return {
+			props: {
+				user: null,
+				loading: false,
+			},
+		}
+	}
 }
