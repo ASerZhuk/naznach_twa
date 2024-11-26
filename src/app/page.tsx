@@ -1,10 +1,10 @@
 'use client'
+
 import Container from './components/Container'
 import { useEffect, useState } from 'react'
 import Main from './components/Main'
 import { getUserById } from './actions/getUserById'
 import { AppRoot } from '@telegram-apps/telegram-ui'
-import { useInitData, useWebApp } from '@vkruglikov/react-telegram-web-app'
 
 export default function Home() {
 	const [telegramId, setTelegramId] = useState<string>()
@@ -14,11 +14,11 @@ export default function Home() {
 	useEffect(() => {
 		const tg = window.Telegram.WebApp
 		tg.ready()
-		const id = tg.initDataUnsafe.user?.id.toString()
-		setTelegramId(id)
-	}, [])
 
-	useEffect(() => {
+		const id = tg.initDataUnsafe?.user?.id.toString()
+		setTelegramId(id)
+		console.log(id)
+
 		const fetchUser = async () => {
 			if (telegramId) {
 				try {
@@ -31,8 +31,10 @@ export default function Home() {
 				}
 			}
 		}
+
 		fetchUser()
 	}, [telegramId])
+
 	return (
 		<AppRoot>
 			<Container>

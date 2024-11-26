@@ -1,15 +1,21 @@
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
-
-export async function getUserById(telegramId: string) {
+export async function getUserById(userId: string) {
 	try {
-		const user = await prisma.user.findFirst({
-			where: { telegramId: telegramId },
+		const response = await fetch('/api/getUser', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ userId }),
 		})
-		return user
+
+		if (!response.ok) {
+			throw new Error('Ошибка загрузки данных пользователя')
+		}
+
+		const data = await response.json()
+		return data
 	} catch (error) {
-		console.error('Ошибка при загрузке пользователя:', error)
+		console.error('Ошибка при получении данных пользователя:', error)
 		return null
 	}
 }
