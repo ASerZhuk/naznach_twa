@@ -21,11 +21,7 @@ export default function RootLayout({
 			<head>
 				<Script
 					strategy='beforeInteractive'
-					src='https://telegram.org/js/telegram-web-app.js'
-				/>
-				<Script
-					strategy='beforeInteractive'
-					src='https://cdn.jsdelivr.net/npm/eruda'
+					src='https://telegram.org/js/telegram-web-app.js?56'
 				/>
 			</head>
 			<body className={inter.className}>
