@@ -7,6 +7,7 @@ import {
 	FaBook,
 	FaCalendarAlt,
 	FaRegAddressCard,
+	FaUserPlus,
 	FaUsers,
 } from 'react-icons/fa'
 import { IoSettingsSharp } from 'react-icons/io5'
@@ -21,9 +22,14 @@ import {
 	IconContainer,
 	List,
 	Section,
+	Tabbar,
 } from '@telegram-apps/telegram-ui'
-import { Icon28AddCircleOutline } from '@vkontakte/icons'
-import { IoIosArrowForward } from 'react-icons/io'
+import {
+	Icon28AddCircleOutline,
+	Icon28BillheadOutline,
+	Icon28CalendarOutline,
+} from '@vkontakte/icons'
+import { IoIosArrowForward, IoMdAddCircleOutline } from 'react-icons/io'
 import { TabbarItem } from '@telegram-apps/telegram-ui/dist/components/Layout/Tabbar/components/TabbarItem/TabbarItem'
 
 interface MainProps {
@@ -50,20 +56,12 @@ const Main = ({ user }: MainProps) => {
 		tg.BackButton.hide()
 	}, [])
 
-	if (loading) {
+	if (!user) {
 		return (
 			<div className='flex justify-center items-center h-screen'>
 				<span className='text-lg font-medium'>
 					<Spin size='large' />
 				</span>
-			</div>
-		)
-	}
-
-	if (!user) {
-		return (
-			<div className='flex justify-center items-center h-screen'>
-				<span className='text-lg font-medium'>Пользователь не найден</span>
 			</div>
 		)
 	}
