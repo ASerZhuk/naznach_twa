@@ -35,14 +35,14 @@ import { TabbarItem } from '@telegram-apps/telegram-ui/dist/components/Layout/Ta
 interface MainProps {
 	user: {
 		id: number
-		telegramId: number | undefined
+		telegramId: string | null
 		firstName: string | null
 		lastName: string | null
 		chatId: string | null
 		username: string | null
 		isMaster: boolean
 		createdAt: Date
-	} | null
+	}
 }
 
 const Main = ({ user }: MainProps) => {
