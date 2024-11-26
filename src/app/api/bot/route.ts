@@ -4,10 +4,10 @@ import prisma from '@/app/libs/prismadb'
 
 const bot = new TelegramBot('7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g')
 const botUsername = 'naznach_twa_bot'
-const webAppUrl = 'https://4dab-178-167-92-34.ngrok-free.app' //'https://naznach-twa.vercel.app/'
+const webAppUrl = 'https://naznach-twa.vercel.app/'
 
 // Устанавливаем вебхук на этот маршрут
-bot.setWebHook(`https://4dab-178-167-92-34.ngrok-free.app/api/bot`)
+bot.setWebHook(`https://naznach-twa.vercel.app/api/bot`)
 
 export async function POST(req: Request) {
 	try {
