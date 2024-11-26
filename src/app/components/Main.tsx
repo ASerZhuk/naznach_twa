@@ -37,11 +37,10 @@ interface MainProps {
 		isMaster: boolean
 		createdAt: Date
 	} | null
-	loading: boolean
 }
 
-const Main = ({ user, loading }: MainProps) => {
-	const { userPhoto, loading: photoLoading, error } = useTelegramUserProfile()
+const Main = ({ user }: MainProps) => {
+	const { userPhoto, loading, error } = useTelegramUserProfile()
 	const router = useRouter()
 
 	useEffect(() => {

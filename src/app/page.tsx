@@ -1,53 +1,34 @@
-import { GetServerSideProps } from 'next'
+import { Suspense } from 'react'
 import Container from './components/Container'
 import Main from './components/Main'
 import { getUserById } from './actions/getUserById'
 import { AppRoot } from '@telegram-apps/telegram-ui'
 
-interface HomeProps {
-	user: any
-	loading: boolean
+// This will be a server-side function that fetches user data
+const fetchUser = async (telegramId: string) => {
+	try {
+		const userData = await getUserById(telegramId)
+		return userData
+	} catch (error) {
+		console.error('Ошибка при получении пользователя:', error)
+		return null
+	}
 }
 
-export default function Home({ user, loading }: HomeProps) {
+export default async function Home() {
+	const tg = typeof window !== 'undefined' ? window.Telegram.WebApp : null
+	const telegramId = tg?.initDataUnsafe?.user?.id?.toString() || ''
+
+	// Fetch user data before rendering
+	const user = await fetchUser(telegramId)
+
 	return (
 		<AppRoot>
 			<Container>
-				<Main user={user} loading={loading} />
+				<Suspense fallback={<div>Loading...</div>}>
+					<Main user={user} />
+				</Suspense>
 			</Container>
 		</AppRoot>
 	)
-}
-
-export const getServerSideProps: GetServerSideProps = async context => {
-	const telegramId = context.req.cookies['telegramId'] // или получаем из query, и т.д.
-
-	// Если нет telegramId, редиректим или возвращаем пустого пользователя
-	if (!telegramId) {
-		return {
-			redirect: {
-				destination: '/login',
-				permanent: false,
-			},
-		}
-	}
-
-	try {
-		// Получаем данные пользователя на сервере
-		const user = await getUserById(telegramId)
-		return {
-			props: {
-				user,
-				loading: false, // Данные уже получены, нет необходимости показывать loading
-			},
-		}
-	} catch (error) {
-		console.error('Ошибка при получении пользователя:', error)
-		return {
-			props: {
-				user: null,
-				loading: false,
-			},
-		}
-	}
 }
