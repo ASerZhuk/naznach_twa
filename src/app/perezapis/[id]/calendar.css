@@ -1,0 +1,33 @@
+/* Custom CSS для DatePicker */
+.datepicker-custom {
+	border: none !important; /* Убираем обводку */
+	background-color: transparent !important;
+}
+
+.react-datepicker {
+	border: none !important;
+	background-color: white !important;
+}
+
+.react-datepicker__header {
+	background-color: transparent !important; /* Убираем фон заголовка */
+	border-bottom: none; /* Убираем нижнюю обводку */
+}
+
+.react-datepicker__day,
+.react-datepicker__day-name {
+	background-color: transparent !important; /* Убираем фон для дней */
+	border-radius: 50% !important; /* Делаем круглыми числа */
+	border: none !important; /* Убираем обводку для дней */
+	margin: 2px 10px;
+	text-align: center;
+}
+
+.react-datepicker__day:hover {
+	background-color: none !important; /* Добавляем эффект при наведении */
+}
+
+.react-datepicker__day--selected {
+	background-color: #3b82f6 !important; /* Цвет для выбранного дня */
+	color: white !important;
+}
