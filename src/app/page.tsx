@@ -1,45 +1,44 @@
-import { Suspense } from 'react'
+'use client'
+
 import Container from './components/Container'
+import { useEffect, useState } from 'react'
 import Main from './components/Main'
 import { getUserById } from './actions/getUserById'
 import { AppRoot } from '@telegram-apps/telegram-ui'
 
-// This will be a server-side function that fetches user data
-const fetchUser = async (telegramId: string) => {
-	try {
-		const response = await fetch('/api/getUser', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({ userId: telegramId }), // передаем userId в теле запроса
-		})
+export default function Home() {
+	const [telegramId, setTelegramId] = useState<string>()
+	const [loading, setLoading] = useState(true)
+	const [user, setUser] = useState<any>(null)
 
-		if (!response.ok) {
-			throw new Error('Ошибка при загрузке данных пользователя')
+	useEffect(() => {
+		const tg = window.Telegram.WebApp
+		tg.ready()
+
+		const id = tg.initDataUnsafe?.user?.id.toString()
+		setTelegramId(id)
+	}, [])
+	useEffect(() => {
+		const fetchUser = async () => {
+			if (telegramId) {
+				try {
+					const userData = await getUserById(telegramId) // передаем идентификатор
+					setUser(userData)
+				} catch (error) {
+					console.error('Ошибка при загрузке пользователя:', error)
+				} finally {
+					setLoading(false)
+				}
+			}
 		}
 
-		const userData = await response.json()
-		return userData
-	} catch (error) {
-		console.error('Ошибка при получении пользователя:', error)
-		return null
-	}
-}
-
-export default async function Home() {
-	const tg = typeof window !== 'undefined' ? window.Telegram.WebApp : null
-	const telegramId = tg?.initDataUnsafe?.user?.id?.toString() || ''
-
-	// Fetch user data before rendering
-	const user = await fetchUser(telegramId)
+		fetchUser()
+	}, [telegramId])
 
 	return (
 		<AppRoot>
 			<Container>
-				<Suspense fallback={<div>Loading...</div>}>
-					<Main user={user} />
-				</Suspense>
+				<Main user={user} />
 			</Container>
 		</AppRoot>
 	)
