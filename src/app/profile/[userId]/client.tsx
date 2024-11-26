@@ -203,7 +203,7 @@ const Client = ({ user, grafik }: ClientProps) => {
 					<div className='ml-4 mr-4 mb-16 mt-4'>
 						<form id='statusForm' className='flex flex-col justify-between'>
 							<Input
-								header='Причина отмены'
+								header='Изменить статус'
 								status='focused'
 								type='text'
 								id='status'
