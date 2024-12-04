@@ -30,12 +30,14 @@ import {
 	MdCategory,
 	MdOutlineCancel,
 	MdMoreTime,
+	MdOutlinePhoneIphone,
 } from 'react-icons/md'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { ModalHeader } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalHeader/ModalHeader'
 import { ModalClose } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalClose/ModalClose'
 import { Icon28Dismiss } from '@vkontakte/icons'
+import { GrUser } from 'react-icons/gr'
 
 interface MyAppointmentlistProps {
 	appointment:
@@ -185,8 +187,6 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 				{filteredAppointments && filteredAppointments.length > 0 ? (
 					filteredAppointments.map(app => (
 						<Section key={app.id} className='mt-4'>
-							{/* Информация о записи (время, дата, цена, категория) */}
-
 							<Cell
 								before={
 									<IconContainer>
@@ -258,60 +258,78 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 
 							{/* Информация о мастере */}
 							{user !== app.specialistId ? (
-								<Cell
-									before={
-										<IconContainer>
-											<MdPerson
-												size={32}
-												className='bg-blue-500 rounded-lg p-1'
-												color='white'
-											/>
-										</IconContainer>
-									}
-									after={
-										<div className='text-blue-500'>
-											{app.specialistName} {app.specialistLastName}
-										</div>
-									}
-								>
-									Мастер
-								</Cell>
+								<>
+									<Cell
+										before={
+											<IconContainer>
+												<MdPerson
+													size={32}
+													className='bg-blue-500 rounded-lg p-1'
+													color='white'
+												/>
+											</IconContainer>
+										}
+										after={
+											<div className='text-blue-500'>
+												{app.specialistName} {app.specialistLastName}
+											</div>
+										}
+									>
+										Мастер
+									</Cell>
+									<Cell
+										before={
+											<IconContainer>
+												<MdPhone
+													size={32}
+													className='bg-blue-500 rounded-lg p-1'
+													color='white'
+												/>
+											</IconContainer>
+										}
+										after={
+											<div className='text-blue-500'>{app.specialistPhone}</div>
+										}
+									>
+										Телефон
+									</Cell>
+								</>
 							) : (
-								<Cell
-									before={
-										<IconContainer>
-											<MdPerson
-												size={32}
-												className='bg-blue-500 rounded-lg p-1'
-												color='white'
-											/>
-										</IconContainer>
-									}
-									after={
-										<div className='text-blue-500'>
-											{app.firstName} {app.lastName}
-										</div>
-									}
-								>
-									Клиент
-								</Cell>
+								<>
+									<Cell
+										before={
+											<IconContainer>
+												<MdPerson
+													size={32}
+													className='bg-blue-500 rounded-lg p-1'
+													color='white'
+												/>
+											</IconContainer>
+										}
+										after={
+											<div className='text-blue-500'>
+												{app.firstName} {app.lastName}
+											</div>
+										}
+									>
+										Клиент
+									</Cell>
+									<Cell
+										before={
+											<IconContainer>
+												<MdPhone
+													size={32}
+													className='bg-blue-500 rounded-lg p-1'
+													color='white'
+												/>
+											</IconContainer>
+										}
+										after={<div className='text-blue-500'>{app.phone}</div>}
+									>
+										Телефон
+									</Cell>
+								</>
 							)}
-							<Cell
-								before={
-									<IconContainer>
-										<MdPhone
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-									</IconContainer>
-								}
-								after={
-									<div className='text-blue-500'>{app.specialistPhone}</div>
-								}
-							>
-								Телефон
-							</Cell>
 
 							{app.specialistAddress && (
 								<Cell

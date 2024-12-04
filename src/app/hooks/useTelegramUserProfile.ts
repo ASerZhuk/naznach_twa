@@ -24,7 +24,7 @@ const useTelegramUserProfile = () => {
 			setTelegram_User(telegramUser)
 
 			// Получаем фото профиля пользователя через Telegram API
-			const botToken = '6874087551:AAHHCPMYy9JXgHVBavUdce_YjoXWgd0Fuew'
+			const botToken = '7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g'
 
 			fetch(
 				`https://api.telegram.org/bot${botToken}/getUserProfilePhotos?user_id=${telegramUser.id}`

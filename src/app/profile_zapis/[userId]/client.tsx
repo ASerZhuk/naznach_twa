@@ -60,7 +60,7 @@ const Client = ({ user, grafik }: ClientProps) => {
 		tg.MainButton.onClick(() => router.push(`/zapis/${user.userId}`))
 
 		if (user) {
-			const botToken = '6874087551:AAHHCPMYy9JXgHVBavUdce_YjoXWgd0Fuew' // Замените на токен вашего бота
+			const botToken = '7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g' // Замените на токен вашего бота
 
 			fetch(
 				`https://api.telegram.org/bot${botToken}/getUserProfilePhotos?user_id=${user.userId}`
@@ -135,7 +135,7 @@ const Client = ({ user, grafik }: ClientProps) => {
 				<Cell>
 					<div className='flex flex-row items-center'>
 						<div className=''>
-							<Avatar src={userPhoto} size={100} />
+							<Avatar src={photo} size={100} />
 						</div>
 						<div className='flex flex-col gap-1 ml-2'>
 							<div className='text-xl font-semibold'>
