@@ -8,7 +8,7 @@ const bot = new TelegramBot('7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g', {
 	polling: false,
 })
 
-const webAppUrl = 'https://naznach.vercel.app'
+const webAppUrl = 'https://naznach-twa.vercel.app/'
 
 export async function POST(request: Request) {
 	try {
