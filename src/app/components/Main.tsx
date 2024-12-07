@@ -123,9 +123,7 @@ const Main = ({ user }: MainProps) => {
 								before={<Icon28AddCircleOutline />}
 								interactiveAnimation='opacity'
 								mode='default'
-								onClick={() =>
-									router.push(`/profile_zapis/${user?.telegramId}`)
-								}
+								onClick={() => router.push(`/specZapis/${user?.telegramId}`)}
 							>
 								Записать
 							</ButtonCell>
