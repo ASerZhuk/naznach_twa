@@ -123,7 +123,7 @@ const Main = ({ user }: MainProps) => {
 								before={<Icon28AddCircleOutline />}
 								interactiveAnimation='opacity'
 								mode='default'
-								onClick={() => router.prefetch(`/specZapis/${user?.telegramId}`)}
+								onClick={() => router.push(`/specZapis/${user?.telegramId}`)}
 							>
 								Записать
 							</ButtonCell>
