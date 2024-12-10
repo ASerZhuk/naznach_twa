@@ -5,7 +5,6 @@ import TelegramBot from 'node-telegram-bot-api'
 const prisma = new PrismaClient()
 
 const bot = new TelegramBot('7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g', {
-const bot = new TelegramBot('7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g', {
 	polling: false,
 })
 
