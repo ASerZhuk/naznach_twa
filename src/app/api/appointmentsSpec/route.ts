@@ -4,11 +4,11 @@ import TelegramBot from 'node-telegram-bot-api'
 
 const prisma = new PrismaClient()
 
-const bot = new TelegramBot('7249133903:AAEWsIi32yjBoPNR6kJHlenKfYSEI-Ba5Yg', {
+const bot = new TelegramBot('7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g', {
 	polling: false,
 })
 
-const webAppUrl = 'https://f5a1-178-167-72-118.ngrok-free.app'
+const webAppUrl = 'https://naznach-twa.vercel.app/'
 
 export async function POST(request: Request) {
 	try {
