@@ -1,13 +1,12 @@
 'use client'
 
-import { Avatar, Carousel, Image, Spin } from 'antd'
+import { Avatar, Image, Spin } from 'antd'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import {
 	FaBook,
 	FaCalendarAlt,
 	FaRegAddressCard,
-	FaUserPlus,
 	FaUsers,
 } from 'react-icons/fa'
 import { IoSettingsSharp } from 'react-icons/io5'
@@ -22,14 +21,9 @@ import {
 	IconContainer,
 	List,
 	Section,
-	Tabbar,
 } from '@telegram-apps/telegram-ui'
-import {
-	Icon28AddCircleOutline,
-	Icon28BillheadOutline,
-	Icon28CalendarOutline,
-} from '@vkontakte/icons'
-import { IoIosArrowForward, IoMdAddCircleOutline } from 'react-icons/io'
+import { Icon28AddCircleOutline } from '@vkontakte/icons'
+import { IoIosArrowForward } from 'react-icons/io'
 import { TabbarItem } from '@telegram-apps/telegram-ui/dist/components/Layout/Tabbar/components/TabbarItem/TabbarItem'
 
 interface MainProps {
@@ -46,7 +40,7 @@ interface MainProps {
 }
 
 const Main = ({ user }: MainProps) => {
-	const { userPhoto, loading, error } = useTelegramUserProfile()
+	const { userPhoto, loading } = useTelegramUserProfile()
 	const router = useRouter()
 
 	useEffect(() => {
@@ -56,7 +50,7 @@ const Main = ({ user }: MainProps) => {
 		tg.BackButton.hide()
 	}, [])
 
-	if (!user) {
+	if (!user || loading) {
 		return (
 			<div className='flex justify-center items-center h-screen'>
 				<span className='text-lg font-medium'>
@@ -65,6 +59,48 @@ const Main = ({ user }: MainProps) => {
 			</div>
 		)
 	}
+
+	const admin = user.chatId === '1312244058'
+
+	const navigateTo = (path: string) => {
+		router.push(path)
+	}
+
+	const masterMenuItems = [
+		{
+			icon: (
+				<FaCalendarAlt
+					size={32}
+					className='bg-blue-500 p-1 rounded-lg'
+					color='white'
+				/>
+			),
+			label: 'Мой график',
+			path: `/grafik/${user.telegramId}`,
+		},
+		{
+			icon: (
+				<IoSettingsSharp
+					size={32}
+					className='bg-blue-500 p-1 rounded-lg'
+					color='white'
+				/>
+			),
+			label: 'Мой профиль',
+			path: `/profile/${user.telegramId}`,
+		},
+		{
+			icon: (
+				<MdMenuBook
+					size={32}
+					className='bg-blue-500 p-1 rounded-lg'
+					color='white'
+				/>
+			),
+			label: 'Записи ко мне',
+			path: `/my_booking/${user.telegramId}`,
+		},
+	]
 
 	return (
 		<>
@@ -75,7 +111,7 @@ const Main = ({ user }: MainProps) => {
 					}
 					after={<Image width={150} src='/logo.svg' alt='Логотип' />}
 				>
-					{user?.firstName}
+					{user.firstName}
 				</Cell>
 			</Section>
 
@@ -99,104 +135,50 @@ const Main = ({ user }: MainProps) => {
 			</Banner>
 
 			{/* Блок "Запись клиента" для мастеров */}
-			{user?.isMaster && (
-				<>
-					<List
-						style={{
-							padding: 10,
-						}}
-					>
-						<Section>
-							<Cell
-								before={
-									<FaRegAddressCard
-										size={32}
-										className='bg-blue-500 p-1 rounded-lg'
-										color='white'
-									/>
-								}
-								subtitle='Запишите клиента к себе на услугу'
-							>
-								Запись клиента
-							</Cell>
-							<ButtonCell
-								before={<Icon28AddCircleOutline />}
-								interactiveAnimation='opacity'
-								mode='default'
-								onClick={() => router.push(`/specZapis/${user?.telegramId}`)}
-							>
-								Записать
-							</ButtonCell>
-						</Section>
-					</List>
-				</>
+			{user.isMaster && (
+				<List style={{ padding: 10 }}>
+					<Section>
+						<Cell
+							before={
+								<FaRegAddressCard
+									size={32}
+									className='bg-blue-500 p-1 rounded-lg'
+									color='white'
+								/>
+							}
+							subtitle='Запишите клиента к себе на услугу'
+						>
+							Запись клиента
+						</Cell>
+						<ButtonCell
+							before={<Icon28AddCircleOutline />}
+							interactiveAnimation='opacity'
+							mode='default'
+							onClick={() => navigateTo(`/specZapis/${user.telegramId}`)}
+						>
+							Записать
+						</ButtonCell>
+					</Section>
+				</List>
 			)}
 
 			<List>
 				<Section header='Основное меню'>
-					{user?.isMaster && (
-						<Cell
-							before={
-								<IconContainer>
-									<FaCalendarAlt
-										size={32}
-										className='bg-blue-500 p-1 rounded-lg'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={
-								<IconContainer>
-									<IoIosArrowForward />
-								</IconContainer>
-							}
-							onClick={() => router.push(`/grafik/${user?.telegramId}`)}
-						>
-							Мой график
-						</Cell>
-					)}
-					{user?.isMaster && (
-						<Cell
-							before={
-								<IconContainer>
-									<IoSettingsSharp
-										size={32}
-										className='bg-blue-500 p-1 rounded-lg'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={
-								<IconContainer>
-									<IoIosArrowForward />
-								</IconContainer>
-							}
-							onClick={() => router.push(`/profile/${user?.telegramId}`)}
-						>
-							Мой профиль
-						</Cell>
-					)}
-					{user?.isMaster && (
-						<Cell
-							before={
-								<IconContainer>
-									<MdMenuBook
-										size={32}
-										className='bg-blue-500 p-1 rounded-lg'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={
-								<IconContainer>
-									<IoIosArrowForward />
-								</IconContainer>
-							}
-							onClick={() => router.push(`/my_booking/${user?.telegramId}`)}
-						>
-							Записи ко мне
-						</Cell>
-					)}
+					{user.isMaster &&
+						masterMenuItems.map(item => (
+							<Cell
+								key={item.label}
+								before={<IconContainer>{item.icon}</IconContainer>}
+								after={
+									<IconContainer>
+										<IoIosArrowForward />
+									</IconContainer>
+								}
+								onClick={() => navigateTo(item.path)}
+							>
+								{item.label}
+							</Cell>
+						))}
 					<Cell
 						before={
 							<IconContainer>
@@ -212,7 +194,7 @@ const Main = ({ user }: MainProps) => {
 								<IoIosArrowForward />
 							</IconContainer>
 						}
-						onClick={() => router.push(`/my_specialist/${user?.telegramId}`)}
+						onClick={() => navigateTo(`/my_specialist/${user.telegramId}`)}
 					>
 						Мои специалисты
 					</Cell>
@@ -231,11 +213,12 @@ const Main = ({ user }: MainProps) => {
 								<IoIosArrowForward />
 							</IconContainer>
 						}
-						onClick={() => router.push(`/my_list/${user?.telegramId}`)}
+						onClick={() => navigateTo(`/my_list/${user.telegramId}`)}
 					>
 						Мои записи
 					</Cell>
 				</Section>
+
 				<FixedLayout>
 					<div className='flex flex-row justify-center'>
 						<TabbarItem>
@@ -251,6 +234,13 @@ const Main = ({ user }: MainProps) => {
 								Обратная связь
 							</a>
 						</TabbarItem>
+						{admin && (
+							<TabbarItem>
+								<div className='text-sm' onClick={() => navigateTo('/admin')}>
+									Админка
+								</div>
+							</TabbarItem>
+						)}
 					</div>
 				</FixedLayout>
 			</List>
