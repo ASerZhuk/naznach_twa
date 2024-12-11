@@ -129,7 +129,7 @@ const Main = ({ user }: MainProps) => {
 				type='section'
 			>
 				<Button mode='white' size='s'>
-					<a className='text-black' href='https://t.me/naznach'>
+					<a className='text-black' href='https://t.me/+SAcWiscRdbBjMGUy'>
 						Подписаться
 					</a>
 				</Button>
