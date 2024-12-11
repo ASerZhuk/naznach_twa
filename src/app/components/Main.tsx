@@ -25,6 +25,7 @@ import {
 import { Icon28AddCircleOutline } from '@vkontakte/icons'
 import { IoIosArrowForward } from 'react-icons/io'
 import { TabbarItem } from '@telegram-apps/telegram-ui/dist/components/Layout/Tabbar/components/TabbarItem/TabbarItem'
+import Link from 'next/link'
 
 interface MainProps {
 	user: {
@@ -166,18 +167,19 @@ const Main = ({ user }: MainProps) => {
 				<Section header='Основное меню'>
 					{user.isMaster &&
 						masterMenuItems.map(item => (
-							<Cell
-								key={item.label}
-								before={<IconContainer>{item.icon}</IconContainer>}
-								after={
-									<IconContainer>
-										<IoIosArrowForward />
-									</IconContainer>
-								}
-								onClick={() => navigateTo(item.path)}
-							>
-								{item.label}
-							</Cell>
+							<Link key={item.label} href={item.path}>
+								<Cell
+									key={item.label}
+									before={<IconContainer>{item.icon}</IconContainer>}
+									after={
+										<IconContainer>
+											<IoIosArrowForward />
+										</IconContainer>
+									}
+								>
+									{item.label}
+								</Cell>
+							</Link>
 						))}
 					<Cell
 						before={
