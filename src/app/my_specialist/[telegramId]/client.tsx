@@ -67,7 +67,7 @@ const MySpecialist: React.FC<MySpecialistProps> = ({ appointment }) => {
 						const specialistData = await res.json()
 
 						// Получаем фото профиля через Telegram API
-						const botToken = '6874087551:AAHHCPMYy9JXgHVBavUdce_YjoXWgd0Fuew' // Ваш токен бота
+						const botToken = '7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g' // Ваш токен бота
 
 						try {
 							const profilePhotoResponse = await fetch(
