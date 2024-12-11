@@ -181,44 +181,47 @@ const Main = ({ user }: MainProps) => {
 								</Cell>
 							</Link>
 						))}
-					<Cell
-						before={
-							<IconContainer>
-								<FaUsers
-									size={32}
-									className='bg-blue-500 p-1 rounded-lg'
-									color='white'
-								/>
-							</IconContainer>
-						}
-						after={
-							<IconContainer>
-								<IoIosArrowForward />
-							</IconContainer>
-						}
-						onClick={() => navigateTo(`/my_specialist/${user.telegramId}`)}
-					>
-						Мои специалисты
-					</Cell>
-					<Cell
-						before={
-							<IconContainer>
-								<FaBook
-									size={32}
-									className='bg-blue-500 p-1 rounded-lg'
-									color='white'
-								/>
-							</IconContainer>
-						}
-						after={
-							<IconContainer>
-								<IoIosArrowForward />
-							</IconContainer>
-						}
-						onClick={() => navigateTo(`/my_list/${user.telegramId}`)}
-					>
-						Мои записи
-					</Cell>
+					<Link href={`/my_specialist/${user.telegramId}`}>
+						<Cell
+							before={
+								<IconContainer>
+									<FaUsers
+										size={32}
+										className='bg-blue-500 p-1 rounded-lg'
+										color='white'
+									/>
+								</IconContainer>
+							}
+							after={
+								<IconContainer>
+									<IoIosArrowForward />
+								</IconContainer>
+							}
+						>
+							Мои специалисты
+						</Cell>
+					</Link>
+					<Link href={`/my_list/${user.telegramId}`}>
+						<Cell
+							before={
+								<IconContainer>
+									<FaBook
+										size={32}
+										className='bg-blue-500 p-1 rounded-lg'
+										color='white'
+									/>
+								</IconContainer>
+							}
+							after={
+								<IconContainer>
+									<IoIosArrowForward />
+								</IconContainer>
+							}
+							onClick={() => navigateTo(`/my_list/${user.telegramId}`)}
+						>
+							Мои записи
+						</Cell>
+					</Link>
 				</Section>
 
 				<FixedLayout>
@@ -237,11 +240,11 @@ const Main = ({ user }: MainProps) => {
 							</a>
 						</TabbarItem>
 						{admin && (
-							<TabbarItem>
-								<div className='text-sm' onClick={() => navigateTo('/admin')}>
-									Админка
-								</div>
-							</TabbarItem>
+							<Link href={`/admin`}>
+								<TabbarItem>
+									<div className='text-sm'>Админка</div>
+								</TabbarItem>
+							</Link>
 						)}
 					</div>
 				</FixedLayout>
