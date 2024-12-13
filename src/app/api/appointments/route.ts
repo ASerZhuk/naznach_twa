@@ -228,11 +228,12 @@ export async function PUT(req: Request) {
 		})
 
 		const clientChatId = parseInt(appointment.clientId)
-		const rewritePhoto = `${webAppUrl}/66.png`
+		const rewritePhoto = `${webAppUrl}/67.png`
 
 		const message = `🔔 Вы перезаписаны.\n\n📆 с ${appointment.date} ⌚ в ${appointment.time}.\n📆 на ${date} ⌚ в ${time}\n😀 Мастер: ${appointment.specialistName} ${appointment.specialistLastName}\n📞 Телефон: ${appointment.specialistPhone}`
 
-		await bot.sendMessage(clientChatId, message, {
+		await bot.sendPhoto(clientChatId, rewritePhoto, {
+			caption: message,
 			reply_markup: {
 				inline_keyboard: [
 					[
