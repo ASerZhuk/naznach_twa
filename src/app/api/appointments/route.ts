@@ -219,12 +219,30 @@ export async function PUT(req: Request) {
 			return NextResponse.json({ error: 'Запись не найдена' }, { status: 404 })
 		}
 
-		// Удаляем запись из базы данных
 		await prisma.appointments.update({
 			where: { id: appointmentIdNum },
 			data: {
 				date: date,
 				time: time,
+			},
+		})
+
+		const clientChatId = parseInt(appointment.clientId)
+		const rewritePhoto = `${webAppUrl}/66.png`
+
+		const message = `🔔 Вы перезаписаны.\n\n📆 с ${appointment.date} ⌚ в ${appointment.time}.\n📆 на ${date} ⌚ в ${time}\n😀 Мастер: ${appointment.specialistName} ${appointment.specialistLastName}\n📞 Телефон: ${appointment.specialistPhone}`
+
+		await bot.sendPhoto(clientChatId, rewritePhoto, {
+			caption: message,
+			reply_markup: {
+				inline_keyboard: [
+					[
+						{
+							text: 'Перейти в приложение',
+							web_app: { url: `${webAppUrl}` },
+						},
+					],
+				],
 			},
 		})
 
