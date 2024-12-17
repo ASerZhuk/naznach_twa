@@ -68,10 +68,16 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 	const [clientAppointments, setClientAppointments] = useState(
 		appointment || []
 	)
-	const [isModalVisible, setIsModalVisible] = useState(false)
+
 	const [cancelReason, setCancelReason] = useState('')
 	const [writeSpec, setWriteSpec] = useState(false)
-	const [message, setMessage] = useState<string>('')
+	const [message, setMessage] = useState({
+		date: '',
+		time: '',
+		specialistName: '',
+		specialistLastName: '',
+		specialistPhone: '',
+	})
 
 	const [selectedAppointmentId, setSelectedAppointmentId] = useState<
 		number | null
@@ -152,11 +158,17 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 
 		if (clientId === specialistId) {
 			setWriteSpec(true)
-			setMessage(
-				`Ваша запись на ${date} в ${time} к мастеру ${specialistName} ${specialistLastName} отменена. Причина: ${cancelReason}. Телефон для связи: ${specialistPhone}. Уведомление из приложения: https://t.me/naznach_twa_bot`
-			)
+			setMessage({
+				date: date,
+				time: time,
+				specialistName: specialistName || 'Не указано',
+				specialistLastName: specialistLastName || 'Не указано',
+				specialistPhone: specialistPhone || 'Не указано',
+			})
 		}
 	}
+	const messageData = `Ваша запись на ${message.date} в ${message.time} к мастеру ${message.specialistName} ${message.specialistLastName} отменена. Причина: ${cancelReason}. Телефон для связи: ${message.specialistPhone}. Уведомление из приложения: https://t.me/naznach_twa_bot`
+	const encodedMessage = encodeURIComponent(messageData)
 
 	return (
 		<>
@@ -413,7 +425,7 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 												<a
 													href={`https://t.me/${
 														app.phone
-													}?text=${encodeURIComponent(message)}`}
+													}?text=${encodeURIComponent(messageData)}`}
 												>
 													<span className='text-blue-500 ml-4'>
 														Отменить и отправить клиенту в Telegram
@@ -422,19 +434,18 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 											</div>
 
 											<div
-												onClick={handleCancel}
-												className='flex mt-4 mb-6 ml-6'
+												className='flex mt-4 mb-3 ml-6'
+												onClick={() => {
+													handleCancel()
+													window.open(
+														`https://wa.me/${app.phone}?text=${encodedMessage}`
+													)
+												}}
 											>
 												<FaWhatsapp size={24} color='green' />
-												<a
-													href={`https://wa.me/${
-														app.phone
-													}?text=${encodeURIComponent(message)}`}
-												>
-													<span className='text-green-500 ml-4'>
-														Отменить и отправить клиенту в WhatsApp
-													</span>
-												</a>
+												<span className='text-green-500 ml-4'>
+													Отменить и отправить клиенту в WhatsApp
+												</span>
 											</div>
 
 											<Button
