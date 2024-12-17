@@ -6,7 +6,12 @@ import locale from 'antd/es/date-picker/locale/ru_RU'
 import dayjs, { Dayjs } from 'dayjs'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
-import { FaRegEdit } from 'react-icons/fa'
+import {
+	FaRegEdit,
+	FaTelegramPlane,
+	FaUserAltSlash,
+	FaWhatsapp,
+} from 'react-icons/fa'
 import {
 	MdOutlineCancel,
 	MdMoreTime,
@@ -17,7 +22,9 @@ import 'react-toastify/dist/ReactToastify.css'
 
 import './calendar.css'
 import {
+	Blockquote,
 	Button,
+	ButtonCell,
 	Cell,
 	Headline,
 	IconContainer,
@@ -63,6 +70,9 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 	)
 	const [isModalVisible, setIsModalVisible] = useState(false)
 	const [cancelReason, setCancelReason] = useState('')
+	const [writeSpec, setWriteSpec] = useState(false)
+	const [message, setMessage] = useState<string>('')
+
 	const [selectedAppointmentId, setSelectedAppointmentId] = useState<
 		number | null
 	>(null)
@@ -88,6 +98,7 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 			const filtered = clientAppointments.filter(app =>
 				dayjs(app.date, 'DD.MM.YYYY').isSame(dayjs(selectedDate), 'day')
 			)
+
 			setFilteredAppointments(filtered)
 		} else {
 			setFilteredAppointments(clientAppointments)
@@ -116,7 +127,6 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 						prevAppointments.filter(app => app.id !== selectedAppointmentId)
 					)
 					toast.success('Запись успешно отменена')
-					setIsModalVisible(false) // Закрываем модальное окно после успешного удаления
 				} else {
 					toast.error('Не удалось отменить запись')
 				}
@@ -127,29 +137,30 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 		}
 	}
 
-	const openCancelModal = (appointmentId: number) => {
+	const openCancelModal = (
+		appointmentId: number,
+		clientId: string,
+		specialistId: string,
+		date: string,
+		time: string,
+		specialistName: string | null,
+		specialistLastName: string | null,
+		specialistPhone: string | null
+	) => {
 		setSelectedAppointmentId(appointmentId)
-		setCancelReason('') // Сбрасываем причину при каждом новом открытии модального окна
-		setIsModalVisible(true)
+		setCancelReason('')
+
+		if (clientId === specialistId) {
+			setWriteSpec(true)
+			setMessage(
+				`Ваша запись на ${date} в ${time} к мастеру ${specialistName} ${specialistLastName} отменена. Причина: ${cancelReason}. Телефон для связи: ${specialistPhone}. Уведомление из приложения: https://t.me/naznach_twa_bot`
+			)
+		}
 	}
 
 	return (
 		<>
 			<ToastContainer />
-			<Modal
-				title='Причина отмены'
-				//visible={isModalVisible}
-				//onOk={handleCancel}
-				//onCancel={() => setIsModalVisible(false)}
-				//okText='Подтвердить'
-				//cancelText='Отмена'
-			>
-				<Input
-					value={cancelReason}
-					onChange={e => setCancelReason(e.target.value)}
-					placeholder='Введите причину отмены'
-				/>
-			</Modal>
 
 			<Section className='pt-2 pb-4'>
 				<Cell
@@ -190,6 +201,18 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 				{filteredAppointments && filteredAppointments.length > 0 ? (
 					filteredAppointments.map(app => (
 						<Section key={app.id} className='mt-4'>
+							{app.clientId === app.specialistId && (
+								<div className=' pr-2 pt-2 pb-2 flex justify-end items-center'>
+									<div className='pr-2 text-red-500 text-xs'>
+										Запись сделана вами
+									</div>
+									<FaUserAltSlash
+										size={24}
+										className='bg-red-500 rounded-lg p-1'
+										color='white'
+									/>
+								</div>
+							)}
 							<Cell
 								before={
 									<IconContainer>
@@ -263,41 +286,53 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 										</div>
 									</button>
 								</div>
-								<Modal
-									header={
-										<ModalHeader
-											after={
-												<ModalClose>
-													<Icon28Dismiss
-														style={{ color: 'var(--tgui--plain_foreground)' }}
-													/>
-												</ModalClose>
-											}
-										></ModalHeader>
-									}
-									trigger={
-										<div className='text-center pt-2'>
-											<button
-												onClick={() => openCancelModal(app.id)}
-												className='bg-red-500 rounded-full px-9 py-3  text-white text-sm'
-											>
-												<div className='flex items-center'>
-													<MdOutlineCancel className='mr-2' />
-													Отменить
-												</div>
-											</button>
-										</div>
-									}
-								>
-									<div className='flex flex-col justify-center'>
-										<Input
-											header='Причина отмены'
-											value={cancelReason}
-											onChange={e => setCancelReason(e.target.value)}
-											placeholder='Сегодня не работаю'
-											status='focused'
-										/>
-										<ModalClose>
+								{!writeSpec ? (
+									<Modal
+										header={
+											<ModalHeader
+												after={
+													<ModalClose>
+														<Icon28Dismiss
+															style={{ color: 'var(--tgui--plain_foreground)' }}
+														/>
+													</ModalClose>
+												}
+											></ModalHeader>
+										}
+										trigger={
+											<div className='text-center pt-2'>
+												<button
+													onClick={() =>
+														openCancelModal(
+															app.id,
+															app.clientId,
+															app.specialistId,
+															app.date,
+															app.time,
+															app.specialistName,
+															app.specialistLastName,
+															app.specialistPhone
+														)
+													}
+													className='bg-red-500 rounded-full px-9 py-3  text-white text-sm'
+												>
+													<div className='flex items-center'>
+														<MdOutlineCancel className='mr-2' />
+														Отменить
+													</div>
+												</button>
+											</div>
+										}
+									>
+										<div className='flex flex-col justify-center'>
+											<Input
+												header='Причина отмены'
+												value={cancelReason}
+												onChange={e => setCancelReason(e.target.value)}
+												placeholder='Сегодня не работаю'
+												status='focused'
+											/>
+
 											<Button
 												className=' ml-4 mr-4 mb-8'
 												size='m'
@@ -305,9 +340,113 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 											>
 												Подтвердить
 											</Button>
-										</ModalClose>
-									</div>
-								</Modal>
+										</div>
+									</Modal>
+								) : (
+									<Modal
+										header={
+											<ModalHeader
+												after={
+													<ModalClose>
+														<Icon28Dismiss
+															style={{ color: 'var(--tgui--plain_foreground)' }}
+														/>
+													</ModalClose>
+												}
+											></ModalHeader>
+										}
+										trigger={
+											<div className='text-center pt-2'>
+												<button
+													onClick={() =>
+														openCancelModal(
+															app.id,
+															app.clientId,
+															app.specialistId,
+															app.date,
+															app.time,
+															app.specialistName,
+															app.specialistLastName,
+															app.specialistPhone
+														)
+													}
+													className='bg-red-500 rounded-full px-9 py-3  text-white text-sm'
+												>
+													<div className='flex items-center'>
+														<MdOutlineCancel className='mr-2' />
+														Отменить
+													</div>
+												</button>
+											</div>
+										}
+									>
+										<div className='flex flex-col justify-center'>
+											<Input
+												header='Причина отмены'
+												value={cancelReason}
+												onChange={e => setCancelReason(e.target.value)}
+												placeholder='Сегодня не работаю'
+												status='focused'
+											/>
+
+											<div>
+												<Blockquote className='flex flex-col' type='text'>
+													<div>Автоматическое сообщение клиенту:</div>
+													<div className='mt-2'>
+														Ваша запись на {app.date} в {app.time} к мастеру{' '}
+														{app.specialistName} {app.specialistLastName}{' '}
+														отменена. Причина: {cancelReason}. Телефон для
+														связи: {app.specialistPhone}. Уведомление из
+														приложения:{' '}
+														<a href='https://t.me/naznach_twa_bot'>
+															https://t.me/naznach_twa_bot
+														</a>
+													</div>
+												</Blockquote>
+											</div>
+
+											<div
+												onClick={handleCancel}
+												className='flex mt-4 mb-3 ml-6'
+											>
+												<FaTelegramPlane size={24} color='#3b82f6' />
+												<a
+													href={`https://t.me/${
+														app.phone
+													}?text=${encodeURIComponent(message)}`}
+												>
+													<span className='text-blue-500 ml-4'>
+														Отменить и отправить клиенту в Telegram
+													</span>
+												</a>
+											</div>
+
+											<div
+												onClick={handleCancel}
+												className='flex mt-4 mb-6 ml-6'
+											>
+												<FaWhatsapp size={24} color='green' />
+												<a
+													href={`https://wa.me/${
+														app.phone
+													}?text=${encodeURIComponent(message)}`}
+												>
+													<span className='text-green-500 ml-4'>
+														Отменить и отправить клиенту в WhatsApp
+													</span>
+												</a>
+											</div>
+
+											<Button
+												className=' ml-4 mr-4 mb-8'
+												size='m'
+												onClick={handleCancel}
+											>
+												Отменить без уведомления клиенту
+											</Button>
+										</div>
+									</Modal>
+								)}
 							</div>
 						</Section>
 					))
