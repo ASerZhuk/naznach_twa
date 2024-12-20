@@ -19,12 +19,7 @@ export async function POST(req: Request) {
 			const text = message.text || ''
 			const startPayload = text.split(' ')[1] || null
 
-			bot.sendMessage(
-				message.chat.id,
-				'Идёт обновление, приложение временно не работает'
-			)
-
-			/*// Проверяем, есть ли пользователь в базе данных
+			// Проверяем, есть ли пользователь в базе данных
 			let user = await prisma.user.findUnique({
 				where: { telegramId: chatId },
 			})
@@ -124,7 +119,6 @@ export async function POST(req: Request) {
 			})
 
 			return NextResponse.json({ success: true })
-		}*/
 		}
 
 		if (callback_query) {
