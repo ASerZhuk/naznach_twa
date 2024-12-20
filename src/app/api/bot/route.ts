@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 				'Идёт обновление, приложение временно не работает'
 			)
 
-			/*// Проверяем, есть ли пользователь в базе данных
+			// Проверяем, есть ли пользователь в базе данных
 			let user = await prisma.user.findUnique({
 				where: { telegramId: chatId },
 			})
@@ -124,7 +124,7 @@ export async function POST(req: Request) {
 			})
 
 			return NextResponse.json({ success: true })
-		}*/
+		}
 		}
 
 		if (callback_query) {
