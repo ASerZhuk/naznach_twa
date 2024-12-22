@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import '@telegram-apps/telegram-ui/dist/styles.css'
 import Script from 'next/script'
+import { AppRoot } from '@telegram-apps/telegram-ui'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,7 +26,9 @@ export default function RootLayout({
 				/>
 			</head>
 			<body className={inter.className}>
-				<div>{children}</div>
+				<AppRoot>
+					<div>{children}</div>
+				</AppRoot>
 			</body>
 		</html>
 	)
