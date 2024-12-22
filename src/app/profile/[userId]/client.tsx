@@ -175,7 +175,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 			}
 		}
 	}
-	const personalLink = `https://t.me/testnaznach_bot?start=${user.userId}`
+	const personalLink = `https://t.me/naznach_twa_bot?start=${user.userId}`
 	const handleCopyLink = async () => {
 		try {
 			await navigator.clipboard.writeText(personalLink)
