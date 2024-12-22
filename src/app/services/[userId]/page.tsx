@@ -14,11 +14,5 @@ export default async function TimeSlots({ params }: ServicesProps) {
 	const user = await getSpecialistByUseId(params.userId)
 	const services = await getServicesById(params.userId)
 
-	return (
-		<div>
-			<Container>
-				<Services specialistId={user?.userId} services={services} />
-			</Container>
-		</div>
-	)
+	return <Services specialistId={user?.userId} services={services} />
 }

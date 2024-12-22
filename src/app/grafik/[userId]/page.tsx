@@ -15,11 +15,5 @@ export default async function TimeSlots({ params }: TimeSlotsProps) {
 	const user = await getSpecialistByUseId(params.userId)
 	const grafik = await getGrafikById(params.userId)
 
-	return (
-		<div>
-			<Container>
-				<TimeSlotPicker specialistId={user?.userId} grafik={grafik} />
-			</Container>
-		</div>
-	)
+	return <TimeSlotPicker specialistId={user?.userId} grafik={grafik} />
 }

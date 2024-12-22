@@ -35,11 +35,5 @@ export default function Home() {
 		fetchUser()
 	}, [telegramId])
 
-	return (
-		<AppRoot>
-			<Container>
-				<Main user={user} />
-			</Container>
-		</AppRoot>
-	)
+	return <Main user={user} />
 }

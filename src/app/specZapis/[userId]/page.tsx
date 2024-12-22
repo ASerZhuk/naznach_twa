@@ -21,15 +21,7 @@ const page = async ({ params }: specZapisPageProps) => {
 	}
 
 	return (
-		<Container>
-			<AppRoot>
-				<SpecZapis
-					user={user}
-					service={service || []}
-					timeslot={timeslot || []}
-				/>
-			</AppRoot>
-		</Container>
+		<SpecZapis user={user} service={service || []} timeslot={timeslot || []} />
 	)
 }
 

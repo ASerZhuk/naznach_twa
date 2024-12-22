@@ -55,17 +55,13 @@ const page = async ({ params }: PereZapisPageProps) => {
 	const timeslot = await getTimeSlotsById(appointment.specialistId)
 
 	return (
-		<AppRoot>
-			<Container>
-				<Perezapis
-					garfik={grafik}
-					user={user}
-					service={service || []}
-					appointments={appointment}
-					timeslot={timeslot || []}
-				/>
-			</Container>
-		</AppRoot>
+		<Perezapis
+			garfik={grafik}
+			user={user}
+			service={service || []}
+			appointments={appointment}
+			timeslot={timeslot || []}
+		/>
 	)
 }
 

@@ -21,13 +21,7 @@ const page = async ({ params }: ZapisPageProps) => {
 		return <div>Пользователь не найден</div>
 	}
 
-	return (
-		<Container>
-			<AppRoot>
-				<Zapis user={user} service={service || []} timeslot={timeslot || []} />
-			</AppRoot>
-		</Container>
-	)
+	return <Zapis user={user} service={service || []} timeslot={timeslot || []} />
 }
 
 export default page
