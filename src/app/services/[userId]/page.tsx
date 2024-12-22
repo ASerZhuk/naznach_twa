@@ -16,11 +16,9 @@ export default async function TimeSlots({ params }: ServicesProps) {
 
 	return (
 		<div>
-			<AppRoot>
-				<Container>
-					<Services specialistId={user?.userId} services={services} />
-				</Container>
-			</AppRoot>
+			<Container>
+				<Services specialistId={user?.userId} services={services} />
+			</Container>
 		</div>
 	)
 }

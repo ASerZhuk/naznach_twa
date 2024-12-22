@@ -17,11 +17,9 @@ export default async function TimeSlots({ params }: TimeSlotsProps) {
 
 	return (
 		<div>
-			<AppRoot>
-				<Container>
-					<TimeSlotPicker specialistId={user?.userId} grafik={grafik} />
-				</Container>
-			</AppRoot>
+			<Container>
+				<TimeSlotPicker specialistId={user?.userId} grafik={grafik} />
+			</Container>
 		</div>
 	)
 }
