@@ -410,7 +410,7 @@ const SpecZapis = ({ user, timeslot, service }: SpecZapisProps) => {
 													className={`px-3 py-2 rounded-full ${
 														selectedTime === time
 															? 'bg-blue-500 text-white'
-															: 'bg-gray-200 hover:bg-gray-300'
+															: 'bg-blue-200 hover:bg-gray-300'
 													}`}
 												>
 													{time}

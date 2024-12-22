@@ -16,9 +16,7 @@ const Container: React.FC<ContainerProps> = ({ children }) => {
 						background: 'var(--tgui--secondary_bg_color)',
 					}}
 				>
-					<div className='max-w-[2520px] min-h-screen mx-auto xl:px-20 md:px-10 sm:px-2 px-4'>
-						{children}
-					</div>
+					<div>{children}</div>
 				</List>
 			</AppRoot>
 		</>

@@ -53,6 +53,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 	const [photo, setPhoto] = useState<string | undefined>()
 	const [expanded, setExpanded] = useState(false)
 	const { userPhoto, loading, error, telegram_user } = useTelegramUserProfile()
+	const [masterPhoto, setMasterPhoto] = useState<string>()
 
 	const router = useRouter()
 
@@ -67,7 +68,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 		tg.MainButton.onClick(() => router.push(`/zapis/${user.userId}`))
 
 		if (user) {
-			const botToken = '7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g' // Замените на токен вашего бота
+			const botToken = '7944780464:AAHZ3r1m_I1x8TFwxqku7xgfIbYyWzmQodY' // Замените на токен вашего бота
 
 			fetch(
 				`https://api.telegram.org/bot${botToken}/getUserProfilePhotos?user_id=${user.userId}`
@@ -96,7 +97,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 				})
 				.then(fileData => {
 					if (fileData?.result?.file_path) {
-						setPhoto(
+						setMasterPhoto(
 							`https://api.telegram.org/file/bot${botToken}/${fileData.result.file_path}`
 						)
 					} else {
@@ -150,7 +151,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 				<Cell>
 					<div className='flex flex-row items-center'>
 						<div className=''>
-							<Avatar src={userPhoto} size={90} />
+							<Avatar src={masterPhoto} size={90} />
 						</div>
 						<div className='flex flex-col gap-1 ml-2'>
 							<div className='text-xl font-semibold'>
