@@ -13,6 +13,10 @@ interface MyBookingProps {
 
 export default async function MyBooking({ params }: MyBookingProps) {
 	const appointment = await getAppointmentBySpecialistId(params.specialistId)
+	if (!appointment) {
+		// Можно показать индикатор загрузки или сообщение об ошибке
+		return <div>Ошибка загрузки данных о встречах</div>
+	}
 
 	return (
 		<Container>

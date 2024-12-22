@@ -11,7 +11,7 @@ import 'react-datepicker/dist/react-datepicker.css'
 import './calendar.css'
 import { addMonths, format } from 'date-fns'
 import { GrContactInfo, GrMoney, GrUser } from 'react-icons/gr'
-import { MdMoreTime, MdOutlinePhoneIphone } from 'react-icons/md'
+import { MdChecklist, MdMoreTime, MdOutlinePhoneIphone } from 'react-icons/md'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { CiCalendarDate } from 'react-icons/ci'
@@ -19,9 +19,11 @@ import {
 	Cell,
 	Headline,
 	IconContainer,
+	Info,
 	Input,
 	List,
 	Placeholder,
+	Radio,
 	Section,
 	Spinner,
 } from '@telegram-apps/telegram-ui'
@@ -34,26 +36,41 @@ interface ClientProps {
 		firstName: string | null
 		userId: string
 		username: string | null
-		price: string | null
 		phone: string | null
 		category: string | null
 		address: string | null
 	}
-	garfik: {
+	timeslot: {
+		id: number
+		specialistId: string
+		grafikId: number
+		serviceId: number
+		serviceName: string
 		dayOfWeek: number
-		time: string[] // Время интервалов в виде массива строк
+		startTime: string
+		endTime: string
+		duration: number
+	}[]
+	service: {
+		id: number
+		name: string
+		description: string | null
+		price: string | null
+		duration: number
 	}[]
 }
 
 enum STEPS {
-	DATE = 0,
-	INFO = 1,
-	CONF = 2,
+	SERVICE = 0,
+	DATE = 1,
+	INFO = 2,
+	CONF = 3,
+	NOT = 4,
 }
 
-const Zapis = ({ user, garfik }: ClientProps) => {
+const Zapis = ({ user, timeslot, service }: ClientProps) => {
 	const router = useRouter()
-	const [step, setStep] = useState(STEPS.DATE)
+	const [step, setStep] = useState(STEPS.SERVICE)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 	const [availableTimes, setAvailableTimes] = useState<string[]>([])
 	const [selectedTime, setSelectedTime] = useState<string | null>(null)
@@ -66,11 +83,68 @@ const Zapis = ({ user, garfik }: ClientProps) => {
 		phone: '',
 	})
 
+	const [serviceId, setServiceId] = useState<number | null>(null)
+	const [serviceName, setServiceName] = useState<string | null>(null)
+	const [servicePrice, setServicePrice] = useState<string | null>(null)
+
+	// Утилиты для работы с временем
+	const parseTime = (timeString: string): number => {
+		const [hours, minutes] = timeString.split(':').map(Number)
+		return hours * 60 + minutes // Конвертируем время в минуты
+	}
+
+	const formatTime = (minutes: number): string => {
+		const hours = Math.floor(minutes / 60)
+			.toString()
+			.padStart(2, '0')
+		const mins = (minutes % 60).toString().padStart(2, '0')
+		return `${hours}:${mins}`
+	}
+
+	const getFreeSlots = (
+		appointments: { start: number; end: number }[],
+		duration: number,
+		dayStart: number,
+		dayEnd: number
+	) => {
+		const freeSlots: { start: number; end: number }[] = []
+		let lastEnd = dayStart
+
+		appointments.sort((a, b) => a.start - b.start)
+
+		for (const appt of appointments) {
+			while (lastEnd + duration <= appt.start) {
+				freeSlots.push({ start: lastEnd, end: lastEnd + duration })
+				lastEnd += duration
+			}
+			lastEnd = Math.max(lastEnd, appt.end)
+		}
+
+		// Проверяем наличие свободных слот после последнего занятия
+		while (lastEnd + duration <= dayEnd) {
+			freeSlots.push({ start: lastEnd, end: lastEnd + duration })
+			lastEnd += duration
+		}
+
+		return freeSlots
+	}
+
+	const handleServiceSelect = (srv: {
+		id: number
+		name: string
+		price: string | null
+		duration: number
+	}) => {
+		setServiceId(srv.id)
+		setServiceName(srv.name || 'Не указано')
+		setServicePrice(srv.price || 'Нет цены')
+	}
+
 	const formatDate = (date: Date | null) => {
 		if (!date) {
-			return null // Если дата не выбрана, возвращаем null
+			return null
 		}
-		return format(date, 'dd.MM.yyyy') // Форматируем дату в 'дд.мм.гггг'
+		return format(date, 'dd.MM.yyyy')
 	}
 	const date = formatDate(selectedDate)
 
@@ -87,7 +161,7 @@ const Zapis = ({ user, garfik }: ClientProps) => {
 	// Функция для проверки, является ли день рабочим
 	const isDayAvailable = (date: Date) => {
 		const dayOfWeek = date.getDay()
-		return garfik.some(slot => slot.dayOfWeek === dayOfWeek)
+		return timeslot.some(slot => slot.dayOfWeek === dayOfWeek)
 	}
 
 	// Обновление доступных временных интервалов на основе выбранной даты
@@ -101,9 +175,11 @@ const Zapis = ({ user, garfik }: ClientProps) => {
 		const fetchAppointments = async () => {
 			if (selectedDate) {
 				const dayOfWeek = selectedDate.getDay()
-				const selectedDay = garfik.find(slot => slot.dayOfWeek === dayOfWeek)
+				const selectedDay = timeslot.filter(
+					slot => slot.dayOfWeek === dayOfWeek
+				)
 
-				if (selectedDay) {
+				if (selectedDay.length > 0) {
 					try {
 						const response = await fetch(
 							`/api/appointments?specialistId=${user?.userId}&date=${date}`
@@ -112,24 +188,49 @@ const Zapis = ({ user, garfik }: ClientProps) => {
 						if (response.ok) {
 							const appointments = await response.json()
 
-							// Проверяем, что данные - это массив
 							if (Array.isArray(appointments)) {
-								const occupiedTimes = appointments.map(
-									(appointment: { time: string }) => appointment.time
+								// Преобразуем полученные данные о занятых слотах
+								const occupiedSlots = appointments.map(
+									(appointment: { time: string }) => {
+										const [start, end] = appointment.time.split('-')
+										return { start: parseTime(start), end: parseTime(end) }
+									}
 								)
 
-								// Отфильтровываем только свободные временные интервалы
-								const freeTimes = selectedDay.time.filter(
-									time => !occupiedTimes.includes(time)
+								// Находим начало и конец рабочего дня из слотов
+								const startTime = Math.min(
+									...selectedDay.map(slot => parseTime(slot.startTime))
+								)
+								const endTime = Math.max(
+									...selectedDay.map(slot => parseTime(slot.endTime))
 								)
 
-								setAvailableTimes(freeTimes)
+								// Используем продолжительность услуги для расчета свободных слотов
+								if (serviceId) {
+									const selectedService = service.find(
+										srv => srv.id === serviceId
+									)
+									if (selectedService) {
+										const freeSlots = getFreeSlots(
+											occupiedSlots,
+											selectedService.duration,
+											startTime,
+											endTime
+										)
+										setAvailableTimes(
+											freeSlots.map(
+												slot =>
+													`${formatTime(slot.start)} - ${formatTime(slot.end)}`
+											)
+										)
+									}
+								}
 							} else {
 								console.error(
 									'Ответ от API не является массивом:',
 									appointments
 								)
-								setAvailableTimes([]) // Если формат неверен, сбрасываем доступные интервалы
+								setAvailableTimes([])
 							}
 						} else {
 							console.error('Ошибка при загрузке записей')
@@ -147,7 +248,7 @@ const Zapis = ({ user, garfik }: ClientProps) => {
 		}
 
 		fetchAppointments()
-	}, [selectedDate, garfik])
+	}, [selectedDate, timeslot, serviceId])
 
 	const handleTimeSelect = (time: string) => {
 		setSelectedTime(time)
@@ -174,14 +275,15 @@ const Zapis = ({ user, garfik }: ClientProps) => {
 					phone: formData.phone,
 					specialistId: user.userId,
 					clientId: clientId?.toString(),
-					date: date, // Преобразуем дату в строку
+					serviceId: serviceId,
+					serviceName: serviceName,
+					date: date,
 					time: selectedTime,
 					specialistName: user.firstName,
 					specialistLastName: user.lastName,
 					specialistPhone: user.phone,
-					specialistCategory: user.category,
 					specialistAddress: user.address,
-					specialistPrice: user.price,
+					specialistPrice: servicePrice,
 				}),
 			})
 
@@ -200,6 +302,60 @@ const Zapis = ({ user, garfik }: ClientProps) => {
 	}
 
 	let bodyContent
+
+	if (step === STEPS.SERVICE) {
+		bodyContent = (
+			<>
+				<BackButton onClick={onBack} />
+				<MainButton text='Далее' onClick={onNext} />
+				<List>
+					<Section className='pt-2'>
+						<Cell
+							before={
+								<MdChecklist
+									size={32}
+									className='bg-blue-500 p-1 rounded-lg'
+									color='white'
+								/>
+							}
+							subtitle='Выберите нужную услугу'
+						>
+							<Headline weight='2'>Услуги</Headline>
+						</Cell>
+						<form>
+							{service.map(srv => (
+								<Cell
+									key={srv.id}
+									Component='label'
+									before={
+										<Radio
+											name='radio'
+											value={srv.id}
+											onChange={() => handleServiceSelect(srv)}
+										/>
+									}
+									description={srv.description}
+									multiline
+									after={
+										<Info
+											subtitle={`${srv.duration.toString()} мин.`}
+											type='text'
+										>
+											{srv.price !== null
+												? `${srv.price} руб.`
+												: 'Цена не указана'}
+										</Info>
+									}
+								>
+									{srv.name}
+								</Cell>
+							))}
+						</form>
+					</Section>
+				</List>
+			</>
+		)
+	}
 
 	if (step === STEPS.DATE) {
 		bodyContent = (
@@ -237,7 +393,7 @@ const Zapis = ({ user, garfik }: ClientProps) => {
 
 							{selectedDate && (
 								<div className='mt-4 p-6'>
-									<div className='grid grid-cols-4 gap-4 place-items-center text-sm'>
+									<div className='grid grid-cols-2 gap-4 place-items-center text-sm'>
 										{isLoading ? (
 											<Spinner size='m' />
 										) : availableTimes.length > 0 ? (
@@ -413,7 +569,7 @@ const Zapis = ({ user, garfik }: ClientProps) => {
 									/>
 								</IconContainer>
 							}
-							after={<div className='text-blue-500'>{user.price} руб.</div>}
+							after={<div className='text-blue-500'>{servicePrice} руб.</div>}
 						>
 							Стоимость
 						</Cell>

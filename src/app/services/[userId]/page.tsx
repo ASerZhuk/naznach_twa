@@ -1,0 +1,26 @@
+import Container from '@/app/components/Container'
+import { getSpecialistByUseId } from '@/app/actions/getSpecialistByUserId'
+import { AppRoot } from '@telegram-apps/telegram-ui'
+import { getServicesById } from '@/app/actions/getServicesById'
+import Services from './client'
+
+interface ServicesProps {
+	params: {
+		userId: string
+	}
+}
+
+export default async function TimeSlots({ params }: ServicesProps) {
+	const user = await getSpecialistByUseId(params.userId)
+	const services = await getServicesById(params.userId)
+
+	return (
+		<div>
+			<AppRoot>
+				<Container>
+					<Services specialistId={user?.userId} services={services} />
+				</Container>
+			</AppRoot>
+		</div>
+	)
+}

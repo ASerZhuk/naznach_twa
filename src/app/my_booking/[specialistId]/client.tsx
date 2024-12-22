@@ -1,7 +1,7 @@
 'use client'
 
 import useTelegramUserProfile from '@/app/hooks/useTelegramUserProfile'
-import { Avatar, Image, DatePicker } from 'antd'
+import { Avatar, Image, DatePicker, Select } from 'antd'
 import locale from 'antd/es/date-picker/locale/ru_RU'
 import dayjs, { Dayjs } from 'dayjs'
 import { useRouter } from 'next/navigation'
@@ -16,6 +16,7 @@ import {
 	MdOutlineCancel,
 	MdMoreTime,
 	MdOutlinePhoneIphone,
+	MdChecklist,
 } from 'react-icons/md'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -36,7 +37,7 @@ import {
 } from '@telegram-apps/telegram-ui'
 import { LuCalendarPlus } from 'react-icons/lu'
 import { CiCalendarDate } from 'react-icons/ci'
-import { GrUser } from 'react-icons/gr'
+import { GrMoney, GrUser } from 'react-icons/gr'
 import { ModalClose } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalClose/ModalClose'
 import { ModalHeader } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalHeader/ModalHeader'
 import { Icon28Dismiss } from '@vkontakte/icons'
@@ -51,13 +52,13 @@ interface MySpecialBookingProps {
 				specialistId: string
 				date: string
 				time: string
+				serviceName: string | null
 				phone: string
 				specialistName: string | null
 				specialistLastName: string | null
 				specialistAddress: string | null
 				specialistPrice: string | null
 				specialistPhone: string | null
-				specialistCategory: string | null
 		  }[]
 		| null
 }
@@ -85,6 +86,10 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 	const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null)
 	const [filteredAppointments, setFilteredAppointments] =
 		useState(clientAppointments)
+	const [selectedService, setSelectedService] = useState<string | null>(null)
+	const servicesList = Array.from(
+		new Set(clientAppointments.map(app => app.serviceName))
+	)
 
 	useEffect(() => {
 		const tg = window.Telegram.WebApp
@@ -100,16 +105,22 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 	}, [appointment])
 
 	useEffect(() => {
-		if (selectedDate) {
-			const filtered = clientAppointments.filter(app =>
-				dayjs(app.date, 'DD.MM.YYYY').isSame(dayjs(selectedDate), 'day')
-			)
+		if (selectedDate || selectedService) {
+			const filtered = clientAppointments.filter(app => {
+				const isSameDate = selectedDate
+					? dayjs(app.date, 'DD.MM.YYYY').isSame(dayjs(selectedDate), 'day')
+					: true
+				const isSameService = selectedService
+					? app.serviceName === selectedService
+					: true
 
+				return isSameDate && isSameService
+			})
 			setFilteredAppointments(filtered)
 		} else {
 			setFilteredAppointments(clientAppointments)
 		}
-	}, [selectedDate, clientAppointments])
+	}, [selectedDate, selectedService, clientAppointments])
 
 	const handleCancel = async () => {
 		if (!cancelReason.trim()) {
@@ -206,6 +217,19 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 						format={'DD.MM.YYYY'}
 						style={{ width: '100%' }}
 					/>
+					<Select
+						style={{ width: '100%', marginTop: '16px' }}
+						placeholder='Выберите услугу'
+						onChange={value => setSelectedService(value)}
+						defaultValue={null}
+					>
+						<Select.Option value={null}>Все услуги</Select.Option>
+						{servicesList.map(service => (
+							<Select.Option key={service} value={service}>
+								{service}
+							</Select.Option>
+						))}
+					</Select>
 				</div>
 			</Section>
 
@@ -252,6 +276,38 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 								after={<div className='text-blue-500'>{app.time}</div>}
 							>
 								Время записи
+							</Cell>
+							<Cell
+								before={
+									<IconContainer>
+										<MdChecklist
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={<div className='text-blue-500'>{app.serviceName}</div>}
+							>
+								Услуга
+							</Cell>
+							<Cell
+								before={
+									<IconContainer>
+										<GrMoney
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={
+									<div className='text-blue-500'>
+										{app.specialistPrice} руб.
+									</div>
+								}
+							>
+								К оплате
 							</Cell>
 							<Cell
 								before={

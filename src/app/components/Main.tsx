@@ -26,6 +26,7 @@ import { Icon28AddCircleOutline } from '@vkontakte/icons'
 import { IoIosArrowForward } from 'react-icons/io'
 import { TabbarItem } from '@telegram-apps/telegram-ui/dist/components/Layout/Tabbar/components/TabbarItem/TabbarItem'
 import Link from 'next/link'
+import { GrTask } from 'react-icons/gr'
 
 interface MainProps {
 	user: {
@@ -78,6 +79,17 @@ const Main = ({ user }: MainProps) => {
 			),
 			label: 'Мой график',
 			path: `/grafik/${user.telegramId}`,
+		},
+		{
+			icon: (
+				<GrTask
+					size={32}
+					className='bg-blue-500 p-1 rounded-lg'
+					color='white'
+				/>
+			),
+			label: 'Мои услуги',
+			path: `/services/${user.telegramId}`,
 		},
 		{
 			icon: (
@@ -181,47 +193,46 @@ const Main = ({ user }: MainProps) => {
 								</Cell>
 							</Link>
 						))}
-					<Link href={`/my_specialist/${user.telegramId}`}>
-						<Cell
-							before={
-								<IconContainer>
-									<FaUsers
-										size={32}
-										className='bg-blue-500 p-1 rounded-lg'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={
-								<IconContainer>
-									<IoIosArrowForward />
-								</IconContainer>
-							}
-						>
-							Мои специалисты
-						</Cell>
-					</Link>
-					<Link href={`/my_list/${user.telegramId}`}>
-						<Cell
-							before={
-								<IconContainer>
-									<FaBook
-										size={32}
-										className='bg-blue-500 p-1 rounded-lg'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={
-								<IconContainer>
-									<IoIosArrowForward />
-								</IconContainer>
-							}
-							onClick={() => navigateTo(`/my_list/${user.telegramId}`)}
-						>
-							Мои записи
-						</Cell>
-					</Link>
+
+					<Cell
+						before={
+							<IconContainer>
+								<FaUsers
+									size={32}
+									className='bg-blue-500 p-1 rounded-lg'
+									color='white'
+								/>
+							</IconContainer>
+						}
+						after={
+							<IconContainer>
+								<IoIosArrowForward />
+							</IconContainer>
+						}
+						onClick={() => navigateTo(`/my_specialist/${user.telegramId}`)}
+					>
+						Мои специалисты
+					</Cell>
+
+					<Cell
+						before={
+							<IconContainer>
+								<FaBook
+									size={32}
+									className='bg-blue-500 p-1 rounded-lg'
+									color='white'
+								/>
+							</IconContainer>
+						}
+						after={
+							<IconContainer>
+								<IoIosArrowForward />
+							</IconContainer>
+						}
+						onClick={() => navigateTo(`/my_list/${user.telegramId}`)}
+					>
+						Мои записи
+					</Cell>
 				</Section>
 
 				<FixedLayout>

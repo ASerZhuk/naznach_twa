@@ -50,12 +50,12 @@ interface MyAppointmentlistProps {
 				date: string
 				time: string
 				phone: string
+				serviceName: string | null
 				specialistName: string | null
 				specialistLastName: string | null
 				specialistAddress: string | null
 				specialistPrice: string | null
 				specialistPhone: string | null
-				specialistCategory: string | null
 		  }[]
 		| null
 
@@ -89,8 +89,11 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 
 		// Выполнение на клиенте: переворачиваем массив
 		if (appointment && appointment.length > 0) {
-			setClientAppointments([...appointment].reverse())
-			setFilteredAppointments([...appointment].reverse())
+			const filtered = appointment.filter(
+				app => app.clientId !== app.specialistId
+			)
+			setClientAppointments([...filtered].reverse())
+			setFilteredAppointments([...filtered].reverse())
 		}
 	}, [appointment])
 
@@ -235,7 +238,7 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 									Стоимость услуги
 								</Cell>
 							)}
-							{app.specialistCategory && (
+							{app.serviceName && (
 								<Cell
 									before={
 										<IconContainer>
@@ -246,91 +249,48 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 											/>
 										</IconContainer>
 									}
+									after={<div className='text-blue-500'>{app.serviceName}</div>}
+								>
+									Услуга
+								</Cell>
+							)}
+							{/* Информация о мастере */}
+							<>
+								<Cell
+									before={
+										<IconContainer>
+											<MdPerson
+												size={32}
+												className='bg-blue-500 rounded-lg p-1'
+												color='white'
+											/>
+										</IconContainer>
+									}
 									after={
 										<div className='text-blue-500'>
-											{app.specialistCategory}
+											{app.specialistName} {app.specialistLastName}
 										</div>
 									}
 								>
-									Категория
+									Мастер
 								</Cell>
-							)}
-
-							{/* Информация о мастере */}
-							{user !== app.specialistId ? (
-								<>
-									<Cell
-										before={
-											<IconContainer>
-												<MdPerson
-													size={32}
-													className='bg-blue-500 rounded-lg p-1'
-													color='white'
-												/>
-											</IconContainer>
-										}
-										after={
-											<div className='text-blue-500'>
-												{app.specialistName} {app.specialistLastName}
-											</div>
-										}
-									>
-										Мастер
-									</Cell>
-									<Cell
-										before={
-											<IconContainer>
-												<MdPhone
-													size={32}
-													className='bg-blue-500 rounded-lg p-1'
-													color='white'
-												/>
-											</IconContainer>
-										}
-										after={
-											<div className='text-blue-500'>{app.specialistPhone}</div>
-										}
-									>
-										Телефон
-									</Cell>
-								</>
-							) : (
-								<>
-									<Cell
-										before={
-											<IconContainer>
-												<MdPerson
-													size={32}
-													className='bg-blue-500 rounded-lg p-1'
-													color='white'
-												/>
-											</IconContainer>
-										}
-										after={
-											<div className='text-blue-500'>
-												{app.firstName} {app.lastName}
-											</div>
-										}
-									>
-										Клиент
-									</Cell>
-									<Cell
-										before={
-											<IconContainer>
-												<MdPhone
-													size={32}
-													className='bg-blue-500 rounded-lg p-1'
-													color='white'
-												/>
-											</IconContainer>
-										}
-										after={<div className='text-blue-500'>{app.phone}</div>}
-									>
-										Телефон
-									</Cell>
-								</>
-							)}
-
+								<Cell
+									before={
+										<IconContainer>
+											<MdPhone
+												size={32}
+												className='bg-blue-500 rounded-lg p-1'
+												color='white'
+											/>
+										</IconContainer>
+									}
+									after={
+										<div className='text-blue-500'>{app.specialistPhone}</div>
+									}
+								>
+									Телефон
+								</Cell>
+							</>
 							{app.specialistAddress && (
 								<Cell
 									before={
@@ -349,7 +309,6 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 									Адрес
 								</Cell>
 							)}
-
 							<div className='flex flex-row p-4 justify-between'>
 								<div className='text-center pt-2'>
 									<button

@@ -22,27 +22,34 @@ interface ClientProps {
 		firstName: string | null
 		userId: string
 		username: string | null
-		price: string | null
 		phone: string | null
 		category: string | null
+		address: string | null
 		description: string | null
 		status: string | null
-		address: string | null
 	}
 	grafik:
 		| {
 				specialistId: string | undefined
 				startTime: string
 				endTime: string
-				interval: number
 				dayOfWeek: number
-				time: string[]
 				id?: number
+		  }[]
+		| null
+	service:
+		| {
+				id: number
+				description: string | null
+				name: string
+				specialistId: string
+				price: string | null
+				duration: number
 		  }[]
 		| null
 }
 
-const Client = ({ user, grafik }: ClientProps) => {
+const Client = ({ user, grafik, service }: ClientProps) => {
 	const [photo, setPhoto] = useState<string | undefined>()
 	const [expanded, setExpanded] = useState(false)
 	const { userPhoto, loading, error, telegram_user } = useTelegramUserProfile()
@@ -104,7 +111,15 @@ const Client = ({ user, grafik }: ClientProps) => {
 	}, [user])
 
 	// Функция для преобразования числового дня недели в текстовый
-	const dayOfWeekNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+	const dayOfWeekNames = [
+		'Воскресенье',
+		'Понедельник',
+		'Вторник',
+		'Среда',
+		'Четверг',
+		'Пятница',
+		'Суббота',
+	]
 
 	const toggleExpanded = () => {
 		setExpanded(!expanded)
@@ -135,7 +150,7 @@ const Client = ({ user, grafik }: ClientProps) => {
 				<Cell>
 					<div className='flex flex-row items-center'>
 						<div className=''>
-							<Avatar src={photo} size={100} />
+							<Avatar src={userPhoto} size={90} />
 						</div>
 						<div className='flex flex-col gap-1 ml-2'>
 							<div className='text-xl font-semibold'>
@@ -150,12 +165,13 @@ const Client = ({ user, grafik }: ClientProps) => {
 								<div className='text-blue-500'>{user.phone}</div>
 							</div>
 
-							<div className='mb-2 font-light'>{user.category}</div>
+							<div className='mb-2 text-xs font-light'>{user.address}</div>
 						</div>
 					</div>
 				</Cell>
 
 				<Cell>
+					<div className='mb-2 text-lg font-semibold'>{user.category}</div>
 					<div className='text-wrap'>
 						{user.description?.split('\n').map((line, index) => (
 							<p key={index}>{line}</p>
@@ -172,31 +188,24 @@ const Client = ({ user, grafik }: ClientProps) => {
 							/>
 						</IconContainer>
 					}
-					after={
-						<IconContainer>
-							{expanded ? (
-								<MdKeyboardArrowUp size={24} />
-							) : (
-								<MdKeyboardArrowDown size={24} />
-							)}
-						</IconContainer>
-					}
-					onClick={toggleExpanded}
 				>
 					График работы
-					{expanded && grafik && grafik.length > 0 && (
-						<div className='flex items-center text-right mt-2'>
-							<ul className='list-none m-0 p-0'>
-								{grafik.map((item, index) => (
-									<li key={index}>
-										{dayOfWeekNames[item.dayOfWeek]}: {item.startTime} -{' '}
-										{item.endTime}
-									</li>
-								))}
-							</ul>
+				</Cell>
+				<div className='mt-2 mb-4'>
+					{grafik && grafik.length > 0 && (
+						<div className='flex flex-col text-right'>
+							{grafik.map((item, index) => (
+								<div className='flex justify-between pt-2' key={index}>
+									<div className=' ml-6'>{dayOfWeekNames[item.dayOfWeek]}:</div>
+									<div className=' text-blue-500 mr-6'>
+										{item.startTime} - {item.endTime}
+									</div>
+								</div>
+							))}
 						</div>
 					)}
-				</Cell>
+				</div>
+
 				<Cell
 					before={
 						<IconContainer>
@@ -207,23 +216,21 @@ const Client = ({ user, grafik }: ClientProps) => {
 							/>
 						</IconContainer>
 					}
-					after={`${user.price} руб.`}
 				>
-					Стоимость услуги
+					Услуги
 				</Cell>
-				<Cell
-					before={
-						<IconContainer>
-							<BsGeoAltFill
-								size={32}
-								className='bg-blue-500 rounded-lg p-1'
-								color='white'
-							/>
-						</IconContainer>
-					}
-				>
-					{user.address}
-				</Cell>
+				<div className='mt-2 mb-4'>
+					{service && service.length > 0 && (
+						<div className='flex flex-col text-right pb-4'>
+							{service.map((item, index) => (
+								<div className='flex justify-between pt-2' key={index}>
+									<div className=' ml-6'>{item.name}</div>
+									<div className=' text-blue-500 mr-6'>{item.price} руб.</div>
+								</div>
+							))}
+						</div>
+					)}
+				</div>
 			</Section>
 		</Container>
 	)

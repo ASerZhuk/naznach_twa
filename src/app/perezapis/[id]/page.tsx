@@ -5,6 +5,8 @@ import Container from '@/app/components/Container'
 import { getAppointmentById } from '@/app/actions/getAppointmentById'
 import Perezapis from './client'
 import { AppRoot } from '@telegram-apps/telegram-ui'
+import { getServicesById } from '@/app/actions/getServicesById'
+import { getTimeSlotsById } from '@/app/actions/getTimeSlotsById'
 
 interface PereZapisPageProps {
 	params: {
@@ -18,6 +20,7 @@ interface Appointment {
 	firstName: string
 	lastName: string
 	specialistId: string
+	serviceId: number
 	date: string
 	time: string
 	phone: string
@@ -26,7 +29,7 @@ interface Appointment {
 	specialistAddress: string | null
 	specialistPrice: string | null
 	specialistPhone: string | null
-	specialistCategory: string | null
+	serviceName: string | null
 }
 
 const page = async ({ params }: PereZapisPageProps) => {
@@ -48,11 +51,19 @@ const page = async ({ params }: PereZapisPageProps) => {
 	}
 
 	const grafik = (await getGrafikById(appointment.specialistId)) || []
+	const service = await getServicesById(appointment.specialistId)
+	const timeslot = await getTimeSlotsById(appointment.specialistId)
 
 	return (
 		<AppRoot>
 			<Container>
-				<Perezapis garfik={grafik} user={user} appointments={appointment} />
+				<Perezapis
+					garfik={grafik}
+					user={user}
+					service={service || []}
+					appointments={appointment}
+					timeslot={timeslot || []}
+				/>
 			</Container>
 		</AppRoot>
 	)

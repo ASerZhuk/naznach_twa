@@ -18,13 +18,14 @@ export async function POST(request: Request) {
 			lastName,
 			phone,
 			specialistId,
+			serviceId,
+			serviceName,
 			date,
 			time,
 			clientId,
 			specialistName,
 			specialistLastName,
 			specialistPhone,
-			specialistCategory,
 			specialistAddress,
 			specialistPrice,
 		} = body
@@ -36,13 +37,14 @@ export async function POST(request: Request) {
 				lastName,
 				phone,
 				specialistId,
+				serviceId,
+				serviceName,
 				date,
 				time,
 				clientId,
 				specialistName,
 				specialistLastName,
 				specialistPhone,
-				specialistCategory,
 				specialistAddress,
 				specialistPrice,
 			},
@@ -164,19 +166,22 @@ export async function DELETE(req: Request) {
 		const cancelPhoto = `${webAppUrl}/55.png`
 		const messageClient = `❌ Ваша запись была отменена.\n\n 📆 Дата: ${appointment.date}\n ⌚ Время: ${appointment.time}\n 😀 Мастер: ${appointment.specialistName} ${appointment.specialistLastName}\n 📞 Телефон: ${appointment.specialistPhone}\n❗ Причина отмены: ${reason}`
 
-		await bot.sendPhoto(clientChatId, cancelPhoto, {
-			caption: messageClient,
-			reply_markup: {
-				inline_keyboard: [
-					[
-						{
-							text: 'Перейти в приложение',
-							web_app: { url: `${webAppUrl}` },
-						},
+		if (appointment.clientId !== appointment.specialistId) {
+			await bot.sendPhoto(clientChatId, cancelPhoto, {
+				caption: messageClient,
+				reply_markup: {
+					inline_keyboard: [
+						[
+							{
+								text: 'Перейти в приложение',
+								web_app: { url: `${webAppUrl}` },
+							},
+						],
 					],
-				],
-			},
-		})
+				},
+			})
+		}
+
 		// Отправка уведомления мастеру о причине отмены
 		const messageMaster = `❌Отмена записи.\n\n
 		Клиент ${appointment.firstName} ${appointment.lastName}.\n\n 📆 Дата: ${appointment.date}\n ⌚ Время: ${appointment.time}\n 📞 Телефон для связи: ${appointment.phone}\n❗ Причина отмены: ${reason}`
@@ -247,19 +252,21 @@ export async function PUT(req: Request) {
 		const masterChatId = parseInt(appointment.specialistId)
 		const rewritePhoto = `${webAppUrl}/68.png`
 
-		await bot.sendPhoto(clientChatId, rewritePhoto, {
-			caption: `🔔 Вы перезаписаны.\n\n📆 с ${appointment.date} ⌚ в ${appointment.time}.\n📆 на ${date} ⌚ в ${time}\n😀 Мастер: ${appointment.specialistName} ${appointment.specialistLastName}\n📞 Телефон: ${appointment.specialistPhone}`,
-			reply_markup: {
-				inline_keyboard: [
-					[
-						{
-							text: 'Перейти в приложение',
-							web_app: { url: `${webAppUrl}` },
-						},
+		if (appointment.clientId !== appointment.specialistId) {
+			await bot.sendPhoto(clientChatId, rewritePhoto, {
+				caption: `🔔 Вы перезаписаны.\n\n📆 с ${appointment.date} ⌚ в ${appointment.time}.\n📆 на ${date} ⌚ в ${time}\n😀 Мастер: ${appointment.specialistName} ${appointment.specialistLastName}\n📞 Телефон: ${appointment.specialistPhone}`,
+				reply_markup: {
+					inline_keyboard: [
+						[
+							{
+								text: 'Перейти в приложение',
+								web_app: { url: `${webAppUrl}` },
+							},
+						],
 					],
-				],
-			},
-		})
+				},
+			})
+		}
 
 		await bot.sendPhoto(masterChatId, rewritePhoto, {
 			caption: `🔔 Клиент ${appointment.firstName} ${appointment.lastName} перезаписан\n\n📆 с ${appointment.date} ⌚ в ${appointment.time}.\n📆 на ${date} ⌚ в ${time}\n📞 Телефон для связи: ${appointment.phone}`,

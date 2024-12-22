@@ -1,9 +1,10 @@
 import React from 'react'
 import SpecZapis from './client'
 import { getSpecialistByUseId } from '@/app/actions/getSpecialistByUserId'
-import { getGrafikById } from '@/app/actions/getGrafikById'
 import Container from '@/app/components/Container'
 import { AppRoot } from '@telegram-apps/telegram-ui'
+import { getServicesById } from '@/app/actions/getServicesById'
+import { getTimeSlotsById } from '@/app/actions/getTimeSlotsById'
 
 interface specZapisPageProps {
 	params: {
@@ -13,7 +14,8 @@ interface specZapisPageProps {
 
 const page = async ({ params }: specZapisPageProps) => {
 	const user = await getSpecialistByUseId(params.userId)
-	const grafik = await getGrafikById(params.userId)
+	const timeslot = await getTimeSlotsById(params.userId)
+	const service = await getServicesById(params.userId)
 	if (!user) {
 		return <div>Пользователь не найден</div>
 	}
@@ -21,7 +23,11 @@ const page = async ({ params }: specZapisPageProps) => {
 	return (
 		<Container>
 			<AppRoot>
-				<SpecZapis user={user} garfik={grafik ?? []} />
+				<SpecZapis
+					user={user}
+					service={service || []}
+					timeslot={timeslot || []}
+				/>
 			</AppRoot>
 		</Container>
 	)

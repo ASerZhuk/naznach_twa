@@ -13,7 +13,7 @@ import {
 	Select,
 } from '@telegram-apps/telegram-ui'
 import { Icon28AddCircleOutline } from '@vkontakte/icons'
-import { Avatar, Image } from 'antd'
+import { Avatar, Image, Spin } from 'antd'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { LuCalendarPlus } from 'react-icons/lu'
@@ -27,9 +27,7 @@ interface TimeSlotPickerComponentProps {
 				specialistId: string | undefined
 				startTime: string
 				endTime: string
-				interval: number
 				dayOfWeek: number
-				time: string[]
 				id?: number
 		  }[]
 		| null
@@ -40,10 +38,8 @@ interface Grafik {
 	specialistId: string | undefined
 	startTime: string
 	endTime: string
-	interval: number
 	selectedDays: number[]
 	id?: number
-	time?: string[]
 }
 
 const TimeSlotPickerComponent: React.FC<TimeSlotPickerComponentProps> = ({
@@ -63,7 +59,6 @@ const TimeSlotPickerComponent: React.FC<TimeSlotPickerComponentProps> = ({
 					specialistId: g.specialistId,
 					startTime: g.startTime,
 					endTime: g.endTime,
-					interval: g.interval,
 					selectedDays: [g.dayOfWeek],
 					id: g.id,
 				})
@@ -86,7 +81,6 @@ const TimeSlotPickerComponent: React.FC<TimeSlotPickerComponentProps> = ({
 						specialistId,
 						startTime: '00:00',
 						endTime: '00:00',
-						interval: 15,
 						selectedDays: [],
 					},
 			  ]
@@ -152,7 +146,6 @@ const TimeSlotPickerComponent: React.FC<TimeSlotPickerComponentProps> = ({
 				grafikName: grafikData.grafikName,
 				startTime: grafikData.startTime,
 				endTime: grafikData.endTime,
-				interval: grafikData.interval,
 				specialistId,
 				daysOfWeek: grafikData.selectedDays,
 			}),
@@ -212,7 +205,7 @@ const TimeSlotPickerComponent: React.FC<TimeSlotPickerComponentProps> = ({
 	}
 
 	const router = useRouter()
-	const { telegram_user, userPhoto, loading, error } = useTelegramUserProfile()
+	const { telegram_user, userPhoto } = useTelegramUserProfile()
 
 	useEffect(() => {
 		const tg = window.Telegram.WebApp
@@ -225,7 +218,7 @@ const TimeSlotPickerComponent: React.FC<TimeSlotPickerComponentProps> = ({
 	return (
 		<>
 			<ToastContainer />
-			<Section className='pt-2'>
+			<Section className='pt-2 mb-4'>
 				<Cell
 					before={
 						<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
@@ -284,32 +277,7 @@ const TimeSlotPickerComponent: React.FC<TimeSlotPickerComponentProps> = ({
 									)
 								}
 							/>
-							<Select
-								status='focused'
-								header='Время на клиента'
-								id={`interval-${index}`}
-								value={grafik.interval}
-								onChange={e =>
-									setGrafikList(prevGrafikList =>
-										prevGrafikList.map((g, i) =>
-											i === index
-												? { ...g, interval: Number(e.target.value) }
-												: g
-										)
-									)
-								}
-							>
-								<option value={15}>15</option>
-								<option value={30}>30</option>
-								<option value={45}>45</option>
-								<option value={60}>60</option>
-								<option value={75}>75</option>
-								<option value={90}>90</option>
-								<option value={105}>105</option>
-								<option value={120}>120</option>
-								<option value={135}>135</option>
-								<option value={150}>150</option>
-							</Select>
+
 							<div className='flex justify-evenly mt-6 text-sm '>
 								{daysOfWeek.map(day => (
 									<button
@@ -356,152 +324,6 @@ const TimeSlotPickerComponent: React.FC<TimeSlotPickerComponentProps> = ({
 					</ButtonCell>
 				</Section>
 			</List>
-
-			{/*<div className='max-w-md mx-auto bg-white shadow-md rounded-lg p-6 '>
-				<div className=' border-b pb-4'>
-					<h2 className='text-xl font-normal pb-2 '>Мой график</h2>
-					<span className=' text-sm'>
-						Добавляйте и удаляйте график на разные дни недели{' '}
-					</span>
-				</div>
-
-				
-				<ToastContainer />
-
-				{grafikList.map((grafik, index) => (
-					<form
-						key={index}
-						onSubmit={e => handleSubmit(e, index)}
-						className='mb-6'
-					>
-						
-						<div className='mb-4'>
-							<label
-								htmlFor={`start-time-${index}`}
-								className='block text-sm font-medium text-gray-700 mt-6 mb-2'
-							>
-								Начало работы:
-							</label>
-							<input
-								id={`start-time-${index}`}
-								type='time'
-								value={grafik.startTime}
-								onChange={e =>
-									setGrafikList(prevGrafikList =>
-										prevGrafikList.map((g, i) =>
-											i === index ? { ...g, startTime: e.target.value } : g
-										)
-									)
-								}
-								className='block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm'
-								required
-							/>
-						</div>
-
-						<div className='mb-4'>
-							<label
-								htmlFor={`end-time-${index}`}
-								className='block text-sm font-medium text-gray-700 mb-2'
-							>
-								Конец работы:
-							</label>
-							<input
-								id={`end-time-${index}`}
-								type='time'
-								value={grafik.endTime}
-								onChange={e =>
-									setGrafikList(prevGrafikList =>
-										prevGrafikList.map((g, i) =>
-											i === index ? { ...g, endTime: e.target.value } : g
-										)
-									)
-								}
-								className='block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm'
-								required
-							/>
-						</div>
-
-						<div className='mb-4'>
-							<label
-								htmlFor={`interval-${index}`}
-								className='block text-sm font-medium text-gray-700 mb-2'
-							>
-								Время на клиента (минуты):
-							</label>
-							<select
-								id={`interval-${index}`}
-								value={grafik.interval}
-								onChange={e =>
-									setGrafikList(prevGrafikList =>
-										prevGrafikList.map((g, i) =>
-											i === index
-												? { ...g, interval: Number(e.target.value) }
-												: g
-										)
-									)
-								}
-								className='block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm'
-							>
-								<option value={15}>15</option>
-								<option value={30}>30</option>
-								<option value={45}>45</option>
-								<option value={60}>60</option>
-								<option value={75}>75</option>
-								<option value={90}>90</option>
-								<option value={105}>105</option>
-								<option value={120}>120</option>
-								<option value={135}>135</option>
-								<option value={150}>150</option>
-							</select>
-						</div>
-
-						
-						<div className='flex justify-between mt-6 text-sm'>
-							{daysOfWeek.map(day => (
-								<button
-									key={day.value}
-									type='button'
-									className={`py-1 px-2 rounded-md transition-colors ${
-										grafik.selectedDays.includes(day.value)
-											? 'bg-blue-500 text-white'
-											: 'bg-gray-200 text-gray-700'
-									}`}
-									onClick={() => toggleDaySelection(index, day.value)}
-								>
-									{day.label}
-								</button>
-							))}
-						</div>
-
-						
-						<div className='mt-6 flex space-x-4'>
-							<button
-								type='submit'
-								className='w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-500 transition-colors text-sm'
-							>
-								Сохранить
-							</button>
-							<button
-								type='button'
-								onClick={() => handleDelete(index)}
-								className='w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors text-sm'
-							>
-								Удалить
-							</button>
-						</div>
-					</form>
-				))}
-
-				<div className='mt-6 flex justify-center'>
-					<button
-						type='button'
-						onClick={handleAddNewGrafik}
-						className='bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-colors text-sm'
-					>
-						+ Добавить график
-					</button>
-				</div>
-			</div>*/}
 		</>
 	)
 }
