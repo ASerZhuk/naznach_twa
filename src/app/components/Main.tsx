@@ -179,18 +179,21 @@ const Main = ({ user }: MainProps) => {
 				<Section header='Основное меню'>
 					{user.isMaster &&
 						masterMenuItems.map(item => (
-							<Cell
-								key={item.label}
-								before={<IconContainer>{item.icon}</IconContainer>}
-								after={
-									<IconContainer>
-										<IoIosArrowForward />
-									</IconContainer>
-								}
-								onClick={() => navigateTo(item.path)}
-							>
-								{item.label}
-							</Cell>
+							<>
+								<Link href={item.path}></Link>
+								<Cell
+									key={item.label}
+									before={<IconContainer>{item.icon}</IconContainer>}
+									after={
+										<IconContainer>
+											<IoIosArrowForward />
+										</IconContainer>
+									}
+									onClick={() => navigateTo(item.path)}
+								>
+									{item.label}
+								</Cell>
+							</>
 						))}
 
 					<Cell
