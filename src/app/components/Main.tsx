@@ -115,6 +115,33 @@ const Main = ({ user }: MainProps) => {
 		},
 	]
 
+	useEffect(() => {
+		if (user) {
+			// Массив путей, которые нужно предзагрузить
+			const pathsToPrefetch = [
+				`/grafik/${user.telegramId}`,
+				`/services/${user.telegramId}`,
+				`/profile/${user.telegramId}`,
+				`/my_booking/${user.telegramId}`,
+				`/my_specialist/${user.telegramId}`,
+				`/my_list/${user.telegramId}`,
+			]
+
+			// Предзагрузка страниц
+			const prefetchPages = pathsToPrefetch.map(path => {
+				return router.prefetch(path)
+			})
+
+			Promise.all(prefetchPages)
+				.then(() => {
+					console.log('Pages prefetched successfully')
+				})
+				.catch(err => {
+					console.error('Error prefetching pages:', err)
+				})
+		}
+	}, [user, router]) // Обновляем предзагрузку при изменении user
+
 	return (
 		<>
 			<Section className='pt-2 pb-2'>
@@ -179,19 +206,18 @@ const Main = ({ user }: MainProps) => {
 				<Section header='Основное меню'>
 					{user.isMaster &&
 						masterMenuItems.map(item => (
-							<Link key={item.label} href={item.path}>
-								<Cell
-									key={item.label}
-									before={<IconContainer>{item.icon}</IconContainer>}
-									after={
-										<IconContainer>
-											<IoIosArrowForward />
-										</IconContainer>
-									}
-								>
-									{item.label}
-								</Cell>
-							</Link>
+							<Cell
+								key={item.label}
+								before={<IconContainer>{item.icon}</IconContainer>}
+								after={
+									<IconContainer>
+										<IoIosArrowForward />
+									</IconContainer>
+								}
+								onClick={() => navigateTo(item.path)}
+							>
+								{item.label}
+							</Cell>
 						))}
 
 					<Cell
