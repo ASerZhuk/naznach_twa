@@ -12,6 +12,7 @@ bot.setWebHook(`https://naznach-twa.vercel.app/api/bot`)
 export async function POST(req: Request) {
 	try {
 		const body = await req.json()
+		console.log('Incoming request body:', body)
 		const { message, callback_query } = body
 
 		if (message) {
