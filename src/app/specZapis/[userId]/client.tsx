@@ -370,7 +370,6 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 								</div>
 							))}
 						</form>
-						<button onClick={onNext}>gfgfg</button>
 					</div>
 				</div>
 			</>
