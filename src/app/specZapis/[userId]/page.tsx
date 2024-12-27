@@ -4,7 +4,8 @@ import { getSpecialistByUseId } from '@/app/actions/getSpecialistByUserId'
 import Container from '@/app/components/Container'
 import { AppRoot } from '@telegram-apps/telegram-ui'
 import { getServicesById } from '@/app/actions/getServicesById'
-import { getTimeSlotsById } from '@/app/actions/getTimeSlotsById'
+
+import { getGrafikById } from '@/app/actions/getGrafikById'
 
 interface specZapisPageProps {
 	params: {
@@ -14,15 +15,13 @@ interface specZapisPageProps {
 
 const page = async ({ params }: specZapisPageProps) => {
 	const user = await getSpecialistByUseId(params.userId)
-	const timeslot = await getTimeSlotsById(params.userId)
 	const service = await getServicesById(params.userId)
+	const grafik = await getGrafikById(params.userId)
 	if (!user) {
 		return <div>Пользователь не найден</div>
 	}
 
-	return (
-		<SpecZapis user={user} service={service || []} timeslot={timeslot || []} />
-	)
+	return <SpecZapis user={user} service={service || []} grafik={grafik || []} />
 }
 
 export default page

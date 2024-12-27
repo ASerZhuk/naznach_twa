@@ -1,13 +1,11 @@
 import React from 'react'
 import { getSpecialistByUseId } from '@/app/actions/getSpecialistByUserId'
 import { getGrafikById } from '@/app/actions/getGrafikById'
-import Container from '@/app/components/Container'
+
 import { getAppointmentById } from '@/app/actions/getAppointmentById'
 import Perezapis from './client'
-import { AppRoot } from '@telegram-apps/telegram-ui'
-import { getServicesById } from '@/app/actions/getServicesById'
-import { getTimeSlotsById } from '@/app/actions/getTimeSlotsById'
 
+import { getServicesById } from '@/app/actions/getServicesById'
 interface PereZapisPageProps {
 	params: {
 		id: number
@@ -52,15 +50,13 @@ const page = async ({ params }: PereZapisPageProps) => {
 
 	const grafik = (await getGrafikById(appointment.specialistId)) || []
 	const service = await getServicesById(appointment.specialistId)
-	const timeslot = await getTimeSlotsById(appointment.specialistId)
 
 	return (
 		<Perezapis
-			garfik={grafik}
+			grafik={grafik || []}
 			user={user}
 			service={service || []}
 			appointments={appointment}
-			timeslot={timeslot || []}
 		/>
 	)
 }

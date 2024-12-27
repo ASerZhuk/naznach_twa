@@ -40,16 +40,11 @@ interface ClientProps {
 		category: string | null
 		address: string | null
 	}
-	timeslot: {
-		id: number
+	grafik: {
 		specialistId: string
-		grafikId: number
-		serviceId: number
-		serviceName: string
 		dayOfWeek: number
 		startTime: string
 		endTime: string
-		duration: number
 	}[]
 	service: {
 		id: number
@@ -68,7 +63,7 @@ enum STEPS {
 	NOT = 4,
 }
 
-const Zapis = ({ user, timeslot, service }: ClientProps) => {
+const Zapis = ({ user, grafik, service }: ClientProps) => {
 	const router = useRouter()
 	const [step, setStep] = useState(STEPS.SERVICE)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -161,7 +156,7 @@ const Zapis = ({ user, timeslot, service }: ClientProps) => {
 	// Функция для проверки, является ли день рабочим
 	const isDayAvailable = (date: Date) => {
 		const dayOfWeek = date.getDay()
-		return timeslot.some(slot => slot.dayOfWeek === dayOfWeek)
+		return grafik.some(grafik => grafik.dayOfWeek === dayOfWeek)
 	}
 
 	// Обновление доступных временных интервалов на основе выбранной даты
@@ -175,8 +170,8 @@ const Zapis = ({ user, timeslot, service }: ClientProps) => {
 		const fetchAppointments = async () => {
 			if (selectedDate) {
 				const dayOfWeek = selectedDate.getDay()
-				const selectedDay = timeslot.filter(
-					slot => slot.dayOfWeek === dayOfWeek
+				const selectedDay = grafik.filter(
+					grafik => grafik.dayOfWeek === dayOfWeek
 				)
 
 				if (selectedDay.length > 0) {
@@ -248,7 +243,7 @@ const Zapis = ({ user, timeslot, service }: ClientProps) => {
 		}
 
 		fetchAppointments()
-	}, [selectedDate, timeslot, serviceId])
+	}, [selectedDate, grafik, serviceId])
 
 	const handleTimeSelect = (time: string) => {
 		setSelectedTime(time)

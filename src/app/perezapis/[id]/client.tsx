@@ -36,13 +36,6 @@ interface ClientProps {
 		address: string | null
 	}
 
-	garfik: {
-		specialistId: string
-		dayOfWeek: number
-		startTime: string
-		endTime: string
-	}[]
-
 	appointments: {
 		id: number
 		clientId: string
@@ -61,16 +54,11 @@ interface ClientProps {
 		serviceName: string | null
 	}
 
-	timeslot: {
-		id: number
+	grafik: {
 		specialistId: string
-		grafikId: number
-		serviceId: number
-		serviceName: string
 		dayOfWeek: number
 		startTime: string
 		endTime: string
-		duration: number
 	}[]
 	service: {
 		id: number
@@ -85,13 +73,7 @@ enum STEPS {
 	NOT = 1,
 }
 
-const Perezapis = ({
-	user,
-	garfik,
-	appointments,
-	timeslot,
-	service,
-}: ClientProps) => {
+const Perezapis = ({ user, grafik, appointments, service }: ClientProps) => {
 	const router = useRouter()
 	const [step, setStep] = useState(STEPS.DATE)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -163,7 +145,7 @@ const Perezapis = ({
 
 	const isDayAvailable = (date: Date) => {
 		const dayOfWeek = date.getDay()
-		return garfik.some(slot => slot.dayOfWeek === dayOfWeek)
+		return grafik.some(grafik => grafik.dayOfWeek === dayOfWeek)
 	}
 
 	useEffect(() => {
@@ -176,8 +158,8 @@ const Perezapis = ({
 		const fetchAppointments = async () => {
 			if (selectedDate) {
 				const dayOfWeek = selectedDate.getDay()
-				const selectedDay = timeslot.filter(
-					slot => slot.dayOfWeek === dayOfWeek
+				const selectedDay = grafik.filter(
+					grafik => grafik.dayOfWeek === dayOfWeek
 				)
 
 				if (selectedDay.length > 0) {
@@ -248,7 +230,7 @@ const Perezapis = ({
 		}
 
 		fetchAppointments()
-	}, [selectedDate, garfik, appointments]) // добавлено appointments для обновления
+	}, [selectedDate, grafik, appointments]) // добавлено appointments для обновления
 
 	const handleTimeSelect = (time: string) => {
 		setSelectedTime(time)
@@ -346,7 +328,7 @@ const Perezapis = ({
 													className={`px-3 py-2 rounded-full ${
 														selectedTime === time
 															? 'bg-blue-500 text-white'
-															: 'bg-blue-200 hover:bg-gray-300'
+															: 'bg-gray-200 hover:bg-gray-300'
 													}`}
 												>
 													{time}

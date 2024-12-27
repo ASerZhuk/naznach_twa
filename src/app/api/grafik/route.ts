@@ -7,6 +7,7 @@ export async function POST(req: Request) {
 	const body = await req.json()
 	const { grafikName, startTime, endTime, specialistId, daysOfWeek } = body
 	const id = specialistId
+	const formatTime = (time: string) => (time === '00:00' ? '24:00' : time)
 
 	try {
 		// Проверяем наличие существующих слотов для специалиста и графика
@@ -44,8 +45,8 @@ export async function POST(req: Request) {
 			newDaysOfWeek.map(async (dayOfWeek: number) => {
 				return prisma.grafik.create({
 					data: {
-						startTime,
-						endTime,
+						startTime: formatTime(startTime),
+						endTime: formatTime(endTime),
 						specialistId: id,
 						dayOfWeek,
 						grafikName, // Сохраняем имя графика

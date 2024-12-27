@@ -17,6 +17,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import { CiCalendarDate } from 'react-icons/ci'
 
 import {
+	AppRoot,
 	Blockquote,
 	Button,
 	ButtonCell,
@@ -34,7 +35,6 @@ import {
 import { LuCalendarPlus } from 'react-icons/lu'
 import { RiMessage2Line } from 'react-icons/ri'
 import { FaTelegramPlane, FaWhatsapp } from 'react-icons/fa'
-import { TimeSlot } from '@prisma/client'
 registerLocale('ru', ru as any)
 
 interface SpecZapisProps {
@@ -47,23 +47,19 @@ interface SpecZapisProps {
 		category: string | null
 		address: string | null
 	}
-	timeslot: {
-		id: number
-		specialistId: string
-		grafikId: number
-		serviceId: number
-		serviceName: string
-		dayOfWeek: number
-		startTime: string
-		endTime: string
-		duration: number
-	}[]
+
 	service: {
 		id: number
 		name: string
 		description: string | null
 		price: string | null
 		duration: number
+	}[]
+	grafik: {
+		specialistId: string
+		dayOfWeek: number
+		startTime: string
+		endTime: string
 	}[]
 }
 
@@ -75,7 +71,7 @@ enum STEPS {
 	NOT = 4,
 }
 
-const SpecZapis = ({ user, timeslot, service }: SpecZapisProps) => {
+const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 	const router = useRouter()
 	const [step, setStep] = useState(STEPS.SERVICE)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -168,7 +164,7 @@ const SpecZapis = ({ user, timeslot, service }: SpecZapisProps) => {
 	// Функция для проверки, является ли день рабочим
 	const isDayAvailable = (date: Date) => {
 		const dayOfWeek = date.getDay()
-		return timeslot.some(slot => slot.dayOfWeek === dayOfWeek)
+		return grafik.some(grafik => grafik.dayOfWeek === dayOfWeek)
 	}
 
 	// Обновление доступных временных интервалов на основе выбранной даты
@@ -182,8 +178,8 @@ const SpecZapis = ({ user, timeslot, service }: SpecZapisProps) => {
 		const fetchAppointments = async () => {
 			if (selectedDate) {
 				const dayOfWeek = selectedDate.getDay()
-				const selectedDay = timeslot.filter(
-					slot => slot.dayOfWeek === dayOfWeek
+				const selectedDay = grafik.filter(
+					grafik => grafik.dayOfWeek === dayOfWeek
 				)
 
 				if (selectedDay.length > 0) {
@@ -255,7 +251,7 @@ const SpecZapis = ({ user, timeslot, service }: SpecZapisProps) => {
 		}
 
 		fetchAppointments()
-	}, [selectedDate, timeslot, serviceId])
+	}, [selectedDate, serviceId])
 
 	const handleTimeSelect = (time: string) => {
 		setSelectedTime(time)
@@ -314,51 +310,69 @@ const SpecZapis = ({ user, timeslot, service }: SpecZapisProps) => {
 			<>
 				<BackButton onClick={onBack} />
 				<MainButton text='Далее' onClick={onNext} />
-				<List>
-					<Section className='pt-2'>
-						<Cell
-							before={
-								<MdChecklist
-									size={32}
-									className='bg-blue-500 p-1 rounded-lg'
-									color='white'
-								/>
-							}
-							subtitle='Выберите нужную услугу'
-						>
-							<Headline weight='2'>Услуги</Headline>
-						</Cell>
+				<div
+					style={{ background: `var(--tg-theme-bg-color)` }}
+					className='h-full min-h-screen w-full min-w-screen m-0'
+				>
+					<div className='flex p-4 items-center'>
+						<div>
+							<MdChecklist
+								size={32}
+								className='bg-blue-500 p-1 rounded-lg'
+								color='white'
+							/>
+						</div>
+						<div className='pl-6'>
+							<div
+								style={{ color: `var(--tg-theme-text-color)` }}
+								className='text-lg font-bold'
+							>
+								Услуги
+							</div>
+							<div
+								style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+								className='text-sm'
+							>
+								Выберите нужную услугу
+							</div>
+						</div>
+					</div>
+					<div>
 						<form>
 							{service.map(srv => (
-								<Cell
+								<div
 									key={srv.id}
-									Component='label'
-									before={
-										<Radio
-											name='radio'
-											value={srv.id}
-											onChange={() => handleServiceSelect(srv)}
-										/>
-									}
-									description={srv.description}
-									multiline
-									after={
-										<Info
-											subtitle={`${srv.duration.toString()} мин.`}
-											type='text'
+									className={`flex items-center justify-between p-4 cursor-pointer ${
+										serviceId === srv.id ? 'bg-blue-200' : ''
+									}`} // Измените цвет фона при выборе
+									onClick={() => handleServiceSelect(srv)} // Обработчик клика
+								>
+									<div>
+										<div style={{ color: `var(--tg-theme-text-color)` }}>
+											{srv.name}
+										</div>
+										<div
+											style={{ color: `var(--tg-theme-subtitle-text-color)` }}
 										>
+											{srv.description}
+										</div>
+									</div>
+									<div className='text-right'>
+										<div style={{ color: `var(--tg-theme-text-color)` }}>
 											{srv.price !== null
 												? `${srv.price} руб.`
 												: 'Цена не указана'}
-										</Info>
-									}
-								>
-									{srv.name}
-								</Cell>
+										</div>
+										<div
+											style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+										>{`${srv.duration.toString()} мин.`}</div>
+									</div>
+								</div>
 							))}
 						</form>
-					</Section>
-				</List>
+						<button onClick={onNext}>gfgfg</button>
+					</div>
+				</div>
 			</>
 		)
 	}
@@ -366,65 +380,75 @@ const SpecZapis = ({ user, timeslot, service }: SpecZapisProps) => {
 	if (step === STEPS.DATE) {
 		bodyContent = (
 			<>
-				<BackButton onClick={onBack} />
+				<BackButton onClick={onBackStep} />
 				<MainButton text='Далее' onClick={onNext} />
-
-				<List>
-					<Section className='pt-2'>
-						<Cell
-							before={
-								<LuCalendarPlus
-									size={32}
-									className='bg-blue-500 p-1 rounded-lg'
-									color='white'
-								/>
-							}
-							subtitle='Выберите дату и время записи'
-						>
-							<Headline weight='2'>Дата и время</Headline>
-						</Cell>
-						<div className='flex-col bg-white rounded-lg shadow-md p-6 text-xl flex justify-center'>
-							<div className='mt-4 flex justify-center'>
-								<DatePicker
-									selected={selectedDate}
-									onChange={date => setSelectedDate(date)}
-									filterDate={isDayAvailable}
-									minDate={new Date()}
-									maxDate={addMonths(new Date(), 1)}
-									locale='ru'
-									inline
-									className='datepicker-custom'
-								/>
-							</div>
-
-							{selectedDate && (
-								<div className='mt-4 p-6'>
-									<div className='grid grid-cols-2 gap-4 place-items-center text-sm'>
-										{isLoading ? (
-											<Spinner size='m' />
-										) : availableTimes.length > 0 ? (
-											availableTimes.map((time, index) => (
-												<button
-													key={index}
-													onClick={() => handleTimeSelect(time)}
-													className={`px-3 py-2 rounded-full ${
-														selectedTime === time
-															? 'bg-blue-500 text-white'
-															: 'bg-blue-200 hover:bg-gray-300'
-													}`}
-												>
-													{time}
-												</button>
-											))
-										) : (
-											<p>Нет свободного времени</p>
-										)}
-									</div>
-								</div>
-							)}
+				<div
+					style={{ background: `var(--tg-theme-bg-color)` }}
+					className='h-full min-h-screen w-full min-w-screen m-0'
+				>
+					<div className='flex p-4 items-center'>
+						<div>
+							<LuCalendarPlus
+								size={32}
+								className='bg-blue-500 p-1 rounded-lg'
+								color='white'
+							/>
 						</div>
-					</Section>
-				</List>
+						<div className='pl-6'>
+							<div
+								style={{ color: `var(--tg-theme-text-color)` }}
+								className='text-lg font-bold'
+							>
+								Дата и время
+							</div>
+							<div
+								style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+								className='text-sm'
+							>
+								Выберите дату и время записи
+							</div>
+						</div>
+					</div>
+					<div>
+						<div className='mt-4 flex justify-center'>
+							<DatePicker
+								selected={selectedDate}
+								onChange={date => setSelectedDate(date)}
+								filterDate={isDayAvailable}
+								minDate={new Date()}
+								maxDate={addMonths(new Date(), 1)}
+								locale='ru'
+								inline
+								className='datepicker-custom'
+							/>
+						</div>
+						{selectedDate && (
+							<div className='mt-4 p-6 ml-0 mr-0'>
+								<div className='grid grid-cols-2 gap-4 place-items-center text-sm'>
+									{isLoading ? (
+										<Spinner size='m' />
+									) : availableTimes.length > 0 ? (
+										availableTimes.map((time, index) => (
+											<button
+												key={index}
+												onClick={() => handleTimeSelect(time)}
+												className={`px-3 py-2 rounded-full ${
+													selectedTime === time
+														? 'bg-blue-500 text-white'
+														: 'bg-white hover:bg-gray-300 text-black'
+												}`}
+											>
+												{time}
+											</button>
+										))
+									) : (
+										<p>Нет свободного времени</p>
+									)}
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
 			</>
 		)
 	}
@@ -432,22 +456,36 @@ const SpecZapis = ({ user, timeslot, service }: SpecZapisProps) => {
 	if (step === STEPS.INFO) {
 		bodyContent = (
 			<>
-				<BackButton onClick={onBackStep} />
-				<MainButton text='Далее' onClick={onNext} />
-				<List>
-					<Section className='pt-2'>
-						<Cell
-							before={
-								<GrContactInfo
+				<AppRoot>
+					<BackButton onClick={onBackStep} />
+					<MainButton text='Далее' onClick={onNext} />
+					<div
+						style={{ background: `var(--tg-theme-bg-color)` }}
+						className='h-full min-h-screen w-full min-w-screen m-0'
+					>
+						<div className='flex p-4 items-center'>
+							<div>
+								<LuCalendarPlus
 									size={32}
 									className='bg-blue-500 p-1 rounded-lg'
 									color='white'
 								/>
-							}
-							subtitle='Введите необходимые данные'
-						>
-							<Headline weight='2'>Контактная информация</Headline>
-						</Cell>
+							</div>
+							<div className='pl-6'>
+								<div
+									style={{ color: `var(--tg-theme-text-color)` }}
+									className='text-lg font-bold'
+								>
+									Контактная информация
+								</div>
+								<div
+									style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+									className='text-sm'
+								>
+									Введите необходимые данные
+								</div>
+							</div>
+						</div>
 						<form>
 							<Input
 								status='focused'
@@ -480,8 +518,57 @@ const SpecZapis = ({ user, timeslot, service }: SpecZapisProps) => {
 								onChange={handleChange}
 							/>
 						</form>
-					</Section>
-				</List>
+					</div>
+
+					<List>
+						<Section className='pt-2'>
+							<Cell
+								before={
+									<GrContactInfo
+										size={32}
+										className='bg-blue-500 p-1 rounded-lg'
+										color='white'
+									/>
+								}
+								subtitle='Введите необходимые данные'
+							>
+								<Headline weight='2'>Контактная информация</Headline>
+							</Cell>
+							<form>
+								<Input
+									status='focused'
+									header='Введите имя'
+									id='firstName'
+									name='firstName'
+									type='text'
+									placeholder='Иван'
+									value={formData.firstName}
+									onChange={handleChange}
+								/>
+								<Input
+									status='focused'
+									header='Введите фамилию'
+									id='lastName'
+									name='lastName'
+									type='text'
+									placeholder='Иванов'
+									value={formData.lastName}
+									onChange={handleChange}
+								/>
+								<Input
+									status='focused'
+									header='Номер телефона'
+									id='phone'
+									name='phone'
+									type='tel'
+									placeholder='+79990001111'
+									value={formData.phone}
+									onChange={handleChange}
+								/>
+							</form>
+						</Section>
+					</List>
+				</AppRoot>
 			</>
 		)
 	}
@@ -489,99 +576,101 @@ const SpecZapis = ({ user, timeslot, service }: SpecZapisProps) => {
 	if (step === STEPS.CONF) {
 		bodyContent = (
 			<>
-				<BackButton onClick={onBackStep} />
-				<MainButton text='Записать' onClick={handleSubmit} />
-				<ToastContainer />
-				<List>
-					<Section className='pt-2'>
-						<Cell
-							before={
-								<GrContactInfo
-									size={32}
-									className='bg-blue-500 p-1 rounded-lg'
-									color='white'
-								/>
-							}
-							subtitle='Проверьте данные перед записью'
-						>
-							<Headline weight='2'>Контактная информация</Headline>
-						</Cell>
-						<Cell
-							before={
-								<IconContainer>
-									<GrUser
+				<AppRoot>
+					<BackButton onClick={onBackStep} />
+					<MainButton text='Записать' onClick={handleSubmit} />
+					<ToastContainer />
+					<List>
+						<Section className='pt-2'>
+							<Cell
+								before={
+									<GrContactInfo
 										size={32}
-										className='bg-blue-500 rounded-lg p-1'
+										className='bg-blue-500 p-1 rounded-lg'
 										color='white'
 									/>
-								</IconContainer>
-							}
-							after={
-								<div className='text-blue-500'>
-									{formData.firstName} {formData.lastName}
-								</div>
-							}
-						>
-							Имя
-						</Cell>
-						<Cell
-							before={
-								<IconContainer>
-									<MdOutlinePhoneIphone
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={<div className='text-blue-500'>{formData.phone}</div>}
-						>
-							Телефон
-						</Cell>
-						<Cell
-							before={
-								<IconContainer>
-									<CiCalendarDate
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={<div className='text-blue-500'>{date}</div>}
-						>
-							Дата записи
-						</Cell>
-						<Cell
-							before={
-								<IconContainer>
-									<MdMoreTime
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={<div className='text-blue-500'>{selectedTime}</div>}
-						>
-							Время записи
-						</Cell>
-						<Cell
-							before={
-								<IconContainer>
-									<GrMoney
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={<div className='text-blue-500'>{servicePrice} руб.</div>}
-						>
-							Стоимость
-						</Cell>
-					</Section>
-				</List>
+								}
+								subtitle='Проверьте данные перед записью'
+							>
+								<Headline weight='2'>Контактная информация</Headline>
+							</Cell>
+							<Cell
+								before={
+									<IconContainer>
+										<GrUser
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={
+									<div className='text-blue-500'>
+										{formData.firstName} {formData.lastName}
+									</div>
+								}
+							>
+								Имя
+							</Cell>
+							<Cell
+								before={
+									<IconContainer>
+										<MdOutlinePhoneIphone
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={<div className='text-blue-500'>{formData.phone}</div>}
+							>
+								Телефон
+							</Cell>
+							<Cell
+								before={
+									<IconContainer>
+										<CiCalendarDate
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={<div className='text-blue-500'>{date}</div>}
+							>
+								Дата записи
+							</Cell>
+							<Cell
+								before={
+									<IconContainer>
+										<MdMoreTime
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={<div className='text-blue-500'>{selectedTime}</div>}
+							>
+								Время записи
+							</Cell>
+							<Cell
+								before={
+									<IconContainer>
+										<GrMoney
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={<div className='text-blue-500'>{servicePrice} руб.</div>}
+							>
+								Стоимость
+							</Cell>
+						</Section>
+					</List>
+				</AppRoot>
 			</>
 		)
 	}
@@ -592,52 +681,58 @@ const SpecZapis = ({ user, timeslot, service }: SpecZapisProps) => {
 	if (step === STEPS.NOT) {
 		bodyContent = (
 			<>
-				<BackButton
-					onClick={() => {
-						router.push('/')
-					}}
-				/>
-				<List>
-					<Section className='pt-2'>
-						<Cell
-							before={
-								<RiMessage2Line
-									size={32}
-									className='bg-blue-500 p-1 rounded-lg'
-									color='white'
-								/>
-							}
-							subtitle='Отправьте уведомление о записи'
-						>
-							<Headline weight='2'>Уведомление</Headline>
-						</Cell>
-					</Section>
-					<Section>
-						<Blockquote className='flex flex-col' type='text'>
-							<div>Автоматическое сообщение клиенту:</div>
-							<div className='mt-2'>{message}</div>
-						</Blockquote>
-						<div className='flex mt-4 mb-3 ml-6'>
-							<FaTelegramPlane size={24} color='#3b82f6' />
-							<a href={`https://t.me/${formData.phone}?text=${encodedMessage}`}>
-								<span className='text-blue-500 ml-6'>Отправить в Telegram</span>
-							</a>
-						</div>
-						<ButtonCell
-							onClick={() => {
-								const encodedMessage = encodeURIComponent(message)
-								window.open(
-									`https://wa.me/${formData.phone}?text=${encodedMessage}`
-								)
-							}}
-							before={<FaWhatsapp size={24} color='green' />}
-						>
-							<span className='text-green-500'>
-								Отправить клиенту в WhatsApp
-							</span>
-						</ButtonCell>
-					</Section>
-				</List>
+				<AppRoot>
+					<BackButton
+						onClick={() => {
+							router.push('/')
+						}}
+					/>
+					<List>
+						<Section className='pt-2'>
+							<Cell
+								before={
+									<RiMessage2Line
+										size={32}
+										className='bg-blue-500 p-1 rounded-lg'
+										color='white'
+									/>
+								}
+								subtitle='Отправьте уведомление о записи'
+							>
+								<Headline weight='2'>Уведомление</Headline>
+							</Cell>
+						</Section>
+						<Section>
+							<Blockquote className='flex flex-col' type='text'>
+								<div>Автоматическое сообщение клиенту:</div>
+								<div className='mt-2'>{message}</div>
+							</Blockquote>
+							<div className='flex mt-4 mb-3 ml-6'>
+								<FaTelegramPlane size={24} color='#3b82f6' />
+								<a
+									href={`https://t.me/${formData.phone}?text=${encodedMessage}`}
+								>
+									<span className='text-blue-500 ml-6'>
+										Отправить в Telegram
+									</span>
+								</a>
+							</div>
+							<ButtonCell
+								onClick={() => {
+									const encodedMessage = encodeURIComponent(message)
+									window.open(
+										`https://wa.me/${formData.phone}?text=${encodedMessage}`
+									)
+								}}
+								before={<FaWhatsapp size={24} color='green' />}
+							>
+								<span className='text-green-500'>
+									Отправить клиенту в WhatsApp
+								</span>
+							</ButtonCell>
+						</Section>
+					</List>
+				</AppRoot>
 			</>
 		)
 	}

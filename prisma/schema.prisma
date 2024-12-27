@@ -45,7 +45,7 @@ model Specialist {
   grafik       Grafik[]
   services     Service[]
   appointments  Appointments[]
-  timeSlots     TimeSlot[]
+
 }
 
 model Service {
@@ -55,7 +55,7 @@ model Service {
   description    String?
   price          String?
   duration       Int        
-  timeSlot       TimeSlot[]
+
   appointments   Appointments[] 
   specialist     Specialist  @relation(fields: [specialistId], references: [userId])
 }
@@ -68,23 +68,10 @@ model Grafik {
   endTime       String
   grafikName    String 
   specialist    Specialist  @relation(fields: [specialistId], references: [userId])
-  timeSlot       TimeSlot[]
+
 }
 
-model TimeSlot {
-  id               Int         @id @default(autoincrement())
-  specialistId     String
-  grafikId         Int
-  serviceId        Int
-  serviceName      String
-  dayOfWeek        Int
-  startTime        String
-  endTime          String
-  duration         Int 
-  specialist       Specialist  @relation(fields: [specialistId], references: [userId])
-  service          Service @relation(fields: [serviceId], references: [id])
-  grafik           Grafik @relation(fields: [grafikId], references: [id])
-}
+
 model Appointments {
   id                 Int         @id @default(autoincrement())
   clientId          String
