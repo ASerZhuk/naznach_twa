@@ -29,22 +29,6 @@ export async function POST(req: Request) {
 			return NextResponse.json({ error: 'График не найден' }, { status: 404 })
 		}
 
-		for (const grafik of grafiks) {
-			// Создание записи в модели timeSlot для каждого графика
-			await prisma.timeSlot.create({
-				data: {
-					specialistId,
-					dayOfWeek: grafik.dayOfWeek,
-					grafikId: grafik.id, // Ссылаемся на текущий график
-					serviceId: newService.id, // Ссылаемся на только что созданную услугу
-					serviceName: newService.name,
-					startTime: grafik.startTime,
-					endTime: grafik.endTime,
-					duration: interval,
-				},
-			})
-		}
-
 		return NextResponse.json(newService, { status: 201 })
 	} catch (error) {
 		console.error('Error adding service:', error)
