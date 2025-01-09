@@ -13,6 +13,7 @@ import { IoSettingsSharp } from 'react-icons/io5'
 import { MdMenuBook } from 'react-icons/md'
 import useTelegramUserProfile from '../hooks/useTelegramUserProfile'
 import {
+	AppRoot,
 	Banner,
 	Button,
 	ButtonCell,
@@ -117,125 +118,152 @@ const Main = ({ user }: MainProps) => {
 
 	return (
 		<>
-			<Section className='pt-2 pb-2'>
-				<Cell
-					before={
-						<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
-					}
-					after={<Image width={35} src='/logo.svg' alt='Логотип' />}
+			<AppRoot>
+				<div
+					className='flex items-center justify-between pb-2 pt-2'
+					style={{ background: `var(--tg-theme-bg-color)` }}
 				>
-					{user.firstName}
-				</Cell>
-			</Section>
-
-			<Banner
-				background={
-					<img
-						alt='Nasa streams'
-						src='https://files.tecnoblog.net/wp-content/uploads/2019/06/telegram-001-700x394.jpg'
-						style={{ width: '150%' }}
-					/>
-				}
-				header='Новости приложения'
-				subheader='Канал с информацией об обновлениях'
-				type='section'
-			>
-				<Button mode='white' size='s'>
-					<a className='text-black' href='https://t.me/+SAcWiscRdbBjMGUy'>
-						Подписаться
-					</a>
-				</Button>
-			</Banner>
-
-			{/* Блок "Запись клиента" для мастеров */}
-			{user.isMaster && (
-				<List style={{ padding: 10 }}>
-					<Section>
-						<Cell
-							before={
-								<FaRegAddressCard
-									size={32}
-									className='bg-blue-500 p-1 rounded-lg'
-									color='white'
-								/>
-							}
-							subtitle='Запишите клиента к себе на услугу'
+					<div className='pl-4'>
+						<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
+						<span
+							style={{ color: `var(--tg-theme-text-color)` }}
+							className='pl-2'
 						>
-							Запись клиента
-						</Cell>
-						<ButtonCell
-							before={<Icon28AddCircleOutline />}
-							interactiveAnimation='opacity'
-							mode='default'
-							onClick={() => navigateTo(`/specZapis/${user.telegramId}`)}
-						>
-							Записать
-						</ButtonCell>
-					</Section>
-				</List>
-			)}
+							{user?.firstName}
+						</span>
+					</div>
+					<div className='pr-4'>
+						<Image width={35} src='/logo.svg' alt='Логотип' />
+					</div>
+				</div>
 
-			<List>
-				<Section header='Основное меню'>
+				<Banner
+					background={
+						<img
+							alt='Nasa streams'
+							src='https://files.tecnoblog.net/wp-content/uploads/2019/06/telegram-001-700x394.jpg'
+							style={{ width: '150%' }}
+						/>
+					}
+					header='Новости приложения'
+					subheader='Канал с информацией об обновлениях'
+					type='section'
+				>
+					<Button mode='white' size='s'>
+						<a className='text-black' href='https://t.me/+SAcWiscRdbBjMGUy'>
+							Подписаться
+						</a>
+					</Button>
+				</Banner>
+
+				{/* Блок "Запись клиента" для мастеров */}
+				{user.isMaster && (
+					<>
+						<div
+							style={{ background: `var(--tg-theme-section-bg-color)` }}
+							className='p-4 m-2 shadow-md'
+						>
+							<div className='flex items-center'>
+								<div>
+									<FaRegAddressCard
+										size={32}
+										className='bg-blue-500 p-1 rounded-lg'
+										color='white'
+									/>
+								</div>
+								<div className='flex flex-col pl-4'>
+									<span>Запись клиента</span>
+									<span
+										className='text-sm'
+										style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+									>
+										Запишите клиента к себе на услугу
+									</span>
+								</div>
+							</div>
+							<div
+								className='mt-6 flex items-center cursor-pointer'
+								style={{ color: `var(--tg-theme-link-color)` }}
+								onClick={() => navigateTo(`/specZapis/${user.telegramId}`)}
+							>
+								<Icon28AddCircleOutline />
+								<span className='ml-4'>Записать</span>
+							</div>
+						</div>
+					</>
+				)}
+
+				<div
+					className='pl-4 pt-2 pb-2'
+					style={{ background: `var(--tg-theme-section-bg-color)` }}
+				>
+					<div
+						style={{ color: `var(--tg-theme-link-color)` }}
+						className='text-sm font-semibold'
+					>
+						Основное меню
+					</div>
 					{user.isMaster &&
 						masterMenuItems.map(item => (
-							<>
-								<Link href={item.path}></Link>
-								<Cell
-									key={item.label}
-									before={<IconContainer>{item.icon}</IconContainer>}
-									after={
-										<IconContainer>
-											<IoIosArrowForward />
-										</IconContainer>
-									}
-									onClick={() => navigateTo(item.path)}
+							<div
+								className='flex items-center justify-between pt-6'
+								onClick={() => navigateTo(`${item.path}`)}
+							>
+								<div className='flex items-center'>
+									<div>{item.icon}</div>
+									<div className='pl-6'>{item.label}</div>
+								</div>
+								<div
+									className='pr-4'
+									style={{ color: `var(--tg-theme-link-color)` }}
 								>
-									{item.label}
-								</Cell>
-							</>
+									<IoIosArrowForward />
+								</div>
+							</div>
 						))}
-
-					<Cell
-						before={
-							<IconContainer>
+					<div
+						className='flex items-center justify-between pt-6'
+						onClick={() => navigateTo(`/my_specialist/${user.telegramId}`)}
+					>
+						<div className='flex items-center'>
+							<div>
 								<FaUsers
 									size={32}
 									className='bg-blue-500 p-1 rounded-lg'
 									color='white'
 								/>
-							</IconContainer>
-						}
-						after={
-							<IconContainer>
-								<IoIosArrowForward />
-							</IconContainer>
-						}
-						onClick={() => navigateTo(`/my_specialist/${user.telegramId}`)}
+							</div>
+							<div className='pl-6'>Мои специалисты</div>
+						</div>
+						<div
+							className='pr-4'
+							style={{ color: `var(--tg-theme-link-color)` }}
+						>
+							<IoIosArrowForward />
+						</div>
+					</div>
+					<div
+						className='flex items-center justify-between pt-6'
+						onClick={() => navigateTo(`/my_list/${user.telegramId}`)}
 					>
-						Мои специалисты
-					</Cell>
-
-					<Cell
-						before={
-							<IconContainer>
+						<div className='flex items-center'>
+							<div>
 								<FaBook
 									size={32}
 									className='bg-blue-500 p-1 rounded-lg'
 									color='white'
 								/>
-							</IconContainer>
-						}
-						after={
-							<IconContainer>
-								<IoIosArrowForward />
-							</IconContainer>
-						}
-						onClick={() => navigateTo(`/my_list/${user.telegramId}`)}
-					>
-						Мои записи
-					</Cell>
-				</Section>
+							</div>
+							<div className='pl-6'>Мои записи</div>
+						</div>
+						<div
+							className='pr-4'
+							style={{ color: `var(--tg-theme-link-color)` }}
+						>
+							<IoIosArrowForward />
+						</div>
+					</div>
+				</div>
 
 				<FixedLayout>
 					<div className='flex flex-row justify-center'>
@@ -261,7 +289,7 @@ const Main = ({ user }: MainProps) => {
 						)}
 					</div>
 				</FixedLayout>
-			</List>
+			</AppRoot>
 		</>
 	)
 }

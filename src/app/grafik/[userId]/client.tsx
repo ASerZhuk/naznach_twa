@@ -1,19 +1,9 @@
 'use client'
 
 import useTelegramUserProfile from '@/app/hooks/useTelegramUserProfile'
-import {
-	Button,
-	ButtonCell,
-	Cell,
-	Headline,
-	Input,
-	LargeTitle,
-	List,
-	Section,
-	Select,
-} from '@telegram-apps/telegram-ui'
+
 import { Icon28AddCircleOutline } from '@vkontakte/icons'
-import { Avatar, Image, Spin } from 'antd'
+import { Avatar, Image, Spin, Input } from 'antd'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { LuCalendarPlus } from 'react-icons/lu'
@@ -218,112 +208,149 @@ const TimeSlotPickerComponent: React.FC<TimeSlotPickerComponentProps> = ({
 	return (
 		<>
 			<ToastContainer />
-			<Section className='pt-2 mb-4'>
-				<Cell
-					before={
-						<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
-					}
-					after={<Image width={35} src='/logo.svg' alt='Логотип' />}
+			<div
+				className='flex items-center justify-between pb-2 pt-2'
+				style={{ background: `var(--tg-theme-section-bg-color)` }}
+			>
+				<div className='pl-4'>
+					<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
+					<span
+						style={{ color: `var(--tg-theme-text-color)` }}
+						className='pl-2'
+					>
+						{telegram_user?.first_name}
+					</span>
+				</div>
+				<div className='pr-4'>
+					<Image width={35} src='/logo.svg' alt='Логотип' />
+				</div>
+			</div>
+			<div className='flex flex-col'>
+				<div
+					className='flex p-4 items-center mt-2'
+					style={{ background: `var(--tg-theme-section-bg-color)` }}
 				>
-					{telegram_user?.first_name}
-				</Cell>
-			</Section>
-
-			<List>
-				<Section>
-					<Cell
-						before={
-							<LuCalendarPlus
-								size={32}
-								className='bg-blue-500 p-1 rounded-lg'
-								color='white'
-							/>
-						}
-						subtitle='Добавляйте и удаляйте график работы'
-					>
-						<Headline weight='2'>Мой график</Headline>
-					</Cell>
-					{grafikList.map((grafik, index) => (
-						<form
-							key={index}
-							onSubmit={e => handleSubmit(e, index)}
-							className='mb-6'
+					<div>
+						<LuCalendarPlus
+							size={32}
+							className='bg-blue-500 p-1 rounded-lg'
+							color='white'
+						/>
+					</div>
+					<div className='pl-6'>
+						<div
+							style={{ color: `var(--tg-theme-text-color)` }}
+							className='text-lg font-bold'
 						>
-							<Input
-								status='focused'
-								header='Время начала работы'
-								id={`start-time-${index}`}
-								type='time'
-								value={grafik.startTime}
-								onChange={e =>
-									setGrafikList(prevGrafikList =>
-										prevGrafikList.map((g, i) =>
-											i === index ? { ...g, startTime: e.target.value } : g
-										)
-									)
-								}
-							/>
-							<Input
-								status='focused'
-								header='Время окончания работы'
-								id={`end-time-${index}`}
-								type='time'
-								value={grafik.endTime}
-								onChange={e =>
-									setGrafikList(prevGrafikList =>
-										prevGrafikList.map((g, i) =>
-											i === index ? { ...g, endTime: e.target.value } : g
-										)
-									)
-								}
-							/>
-
-							<div className='flex justify-evenly mt-6 text-sm '>
-								{daysOfWeek.map(day => (
-									<button
-										key={day.value}
-										type='button'
-										className={`py-1 px-2 rounded-md transition-colors ${
-											grafik.selectedDays.includes(day.value)
-												? 'bg-blue-500 text-white'
-												: 'bg-gray-200 text-gray-700'
-										}`}
-										onClick={() => toggleDaySelection(index, day.value)}
-									>
-										{day.label}
-									</button>
-								))}
-							</div>
-							<div className='mt-6 flex flex-col p-4'>
-								{!grafik.id ? (
-									<button
-										type='submit'
-										className=' bg-blue-500 text-white py-4 px-4 rounded-md hover:bg-blue-500 transition-colors text-sm mb-4'
-									>
-										Сохранить
-									</button>
-								) : (
-									<div></div>
-								)}
-								<button
-									type='button'
-									onClick={() => handleDelete(index)}
-									className=' bg-red-600 text-white py-4 px-4 rounded-md hover:bg-red-700 transition-colors text-sm'
-								>
-									Удалить
-								</button>
-							</div>
-						</form>
-					))}
-					<ButtonCell
-						before={<Icon28AddCircleOutline />}
-						interactiveAnimation='background'
-						onClick={handleAddNewGrafik}
+							Мой график
+						</div>
+						<div
+							style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+							className='text-sm'
+						>
+							Добавляйте и удаляйте график работы
+						</div>
+					</div>
+				</div>
+				<div>
+					<div
+						className='mt-2 pt-2'
+						style={{ background: `var(--tg-theme-section-bg-color)` }}
 					>
-						Добавить график работы
-					</ButtonCell>
-				</Section>
-			</List>
+						{grafikList.map((grafik, index) => (
+							<form
+								key={index}
+								onSubmit={e => handleSubmit(e, index)}
+								className='mb-6'
+							>
+								<div className='flex flex-col mb-4 pl-4 pr-4'>
+									<label className='pb-2'>Начало работы</label>
+									<Input
+										id={`start-time-${index}`}
+										type='time'
+										value={grafik.startTime}
+										onChange={e =>
+											setGrafikList(prevGrafikList =>
+												prevGrafikList.map((g, i) =>
+													i === index ? { ...g, startTime: e.target.value } : g
+												)
+											)
+										}
+										className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500'
+										style={{
+											background: `var(--tg-theme-section-bg-color)`,
+											color: `var(--tg-theme-text-color)`,
+										}}
+									/>
+								</div>
+								<div className='flex flex-col mb-4 pl-4 pr-4'>
+									<label className='pb-2'>Конец работы</label>
+									<Input
+										id={`end-time-${index}`}
+										type='time'
+										value={grafik.endTime}
+										onChange={e =>
+											setGrafikList(prevGrafikList =>
+												prevGrafikList.map((g, i) =>
+													i === index ? { ...g, endTime: e.target.value } : g
+												)
+											)
+										}
+										className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500'
+										style={{
+											background: `var(--tg-theme-section-bg-color)`,
+											color: `var(--tg-theme-text-color)`,
+										}}
+									/>
+								</div>
+								<div className='flex justify-evenly mt-6 text-sm '>
+									{daysOfWeek.map(day => (
+										<button
+											key={day.value}
+											type='button'
+											className={`py-1 px-2 rounded-md transition-colors ${
+												grafik.selectedDays.includes(day.value)
+													? 'bg-blue-500 text-white'
+													: 'bg-gray-200 text-gray-700'
+											}`}
+											onClick={() => toggleDaySelection(index, day.value)}
+										>
+											{day.label}
+										</button>
+									))}
+								</div>
+								<div className='mt-6 flex flex-col p-4'>
+									{!grafik.id ? (
+										<button
+											type='submit'
+											className=' bg-blue-500 text-white py-4 px-4 rounded-md hover:bg-blue-500 transition-colors text-sm mb-4'
+										>
+											Сохранить
+										</button>
+									) : (
+										<div></div>
+									)}
+									<button
+										type='button'
+										onClick={() => handleDelete(index)}
+										className=' bg-red-600 text-white py-4 px-4 rounded-md hover:bg-red-700 transition-colors text-sm'
+									>
+										Удалить
+									</button>
+								</div>
+							</form>
+						))}
+						<div
+							className='mt-6 pl-4 pb-4 flex items-center cursor-pointer'
+							style={{ color: `var(--tg-theme-link-color)` }}
+							onClick={handleAddNewGrafik}
+						>
+							<Icon28AddCircleOutline />
+							<span className='ml-4'>Добавить график работы</span>
+						</div>
+					</div>
+				</div>
+			</div>
 		</>
 	)
 }

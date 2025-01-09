@@ -5,15 +5,13 @@ import {
 	AppRoot,
 	Button,
 	ButtonCell,
-	Input,
 	Modal,
 	Placeholder,
-	Select,
 } from '@telegram-apps/telegram-ui'
 import { ModalClose } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalClose/ModalClose'
 import { ModalHeader } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalHeader/ModalHeader'
 import { Icon28AddCircleOutline } from '@vkontakte/icons'
-import { Avatar, Image } from 'antd'
+import { Avatar, Image, Input } from 'antd'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { GrTask } from 'react-icons/gr'
@@ -45,8 +43,8 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 		name: '',
 		description: '',
 		price: '',
-		duration: '',
-		valuta: '',
+		duration: '15',
+		valuta: 'руб.',
 	})
 
 	// Состояние для списка услуг
@@ -123,10 +121,10 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 		<>
 			<ToastContainer />
 			<div
-				className='flex items-center justify-between'
-				style={{ background: `var(--tg-theme-bg-color)` }}
+				className='flex items-center justify-between pb-2 pt-2'
+				style={{ background: `var(--tg-theme-section-bg-color)` }}
 			>
-				<div className='pl-4 pt-2'>
+				<div className='pl-4'>
 					<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
 					<span
 						style={{ color: `var(--tg-theme-text-color)` }}
@@ -135,12 +133,15 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 						{telegram_user?.first_name}
 					</span>
 				</div>
-				<div className='pr-4 pt-2'>
+				<div className='pr-4'>
 					<Image width={35} src='/logo.svg' alt='Логотип' />
 				</div>
 			</div>
 
-			<div className='flex p-4 items-center mt-2'>
+			<div
+				style={{ background: `var(--tg-theme-section-bg-color)` }}
+				className='flex p-4 items-center mt-2'
+			>
 				<div>
 					<GrTask
 						size={32}
@@ -164,7 +165,10 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 				</div>
 			</div>
 
-			<div>
+			<div
+				className='mt-2'
+				style={{ background: `var(--tg-theme-section-bg-color)` }}
+			>
 				{serviceList.length === 0 ? (
 					<div
 						className='pl-4 pb-4 text-lg'
@@ -174,7 +178,10 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 					</div>
 				) : (
 					serviceList.map(service => (
-						<div className='flex items-center justify-between p-4'>
+						<div
+							key={service.id}
+							className='flex items-center justify-between p-4'
+						>
 							<div>
 								<div style={{ color: `var(--tg-theme-text-color)` }}>
 									{service.name}
@@ -210,73 +217,97 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 					}
 				>
 					<ModalHeader></ModalHeader>
-					<Input
-						id='name'
-						name='name'
-						value={serviceData.name}
-						status='focused'
-						header='Название услуги'
-						type='text'
-						placeholder='Маникюр'
-						onChange={handleChange}
-					/>
-					<Input
-						id='description'
-						name='description'
-						value={serviceData.description}
-						status='focused'
-						header='Описание услуги'
-						type='text'
-						placeholder='Описание услуги'
-						onChange={handleChange}
-					/>
-					<Input
-						id='price'
-						name='price'
-						value={serviceData.price}
-						status='focused'
-						header='Стоимость'
-						type='number'
-						placeholder='2500'
-						onChange={handleChange}
-					/>
-					<Select
-						id='valuta'
-						name='valuta'
-						value={serviceData.valuta}
-						status='focused'
-						header='Валюта'
-						onChange={handleChange}
-					>
-						<option value={'руб.'}>₽</option>
-						<option value={'бел. руб.'}>Br</option>
-						<option value={'долл.'}>$</option>
-						<option value={'евро'}>€</option>
-						<option value={'груз. лари'}>₾</option>
-						<option value={'тнг'}>₸</option>
-					</Select>
-					<Select
-						id='duration'
-						name='duration'
-						value={serviceData.duration}
-						status='focused'
-						header='Длительность услуги(мин.)'
-						onChange={handleChange}
-					>
-						<option value={15}>15</option>
-						<option value={30}>30</option>
-						<option value={45}>45</option>
-						<option value={60}>60</option>
-						<option value={75}>75</option>
-						<option value={90}>90</option>
-						<option value={105}>105</option>
-						<option value={120}>120</option>
-						<option value={135}>135</option>
-						<option value={150}>150</option>
-						<option value={180}>180</option>
-						<option value={200}>200</option>
-						<option value={220}>220</option>
-					</Select>
+					<div className='pl-4 pr-4'>
+						<label className='pb-2'>Название услуги</label>
+						<Input
+							id='name'
+							name='name'
+							value={serviceData.name}
+							type='text'
+							placeholder='Маникюр'
+							onChange={handleChange}
+							className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+							style={{
+								background: `var(--tg-theme-section-bg-color)`,
+								color: `var(--tg-theme-text-color)`,
+							}}
+						/>
+						<label className='pb-2'>Описание услуги</label>
+						<Input
+							id='description'
+							name='description'
+							value={serviceData.description}
+							type='text'
+							placeholder='Обычная услуга'
+							onChange={handleChange}
+							className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+							style={{
+								background: `var(--tg-theme-section-bg-color)`,
+								color: `var(--tg-theme-text-color)`,
+							}}
+						/>
+						<label className='pb-2'>Стоимость услуги</label>
+						<Input
+							id='price'
+							name='price'
+							value={serviceData.price}
+							type='number'
+							placeholder='2500'
+							onChange={handleChange}
+							className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+							style={{
+								background: `var(--tg-theme-section-bg-color)`,
+								color: `var(--tg-theme-text-color)`,
+							}}
+						/>
+						<div className='flex flex-col'>
+							<label className='pb-2'>Валюта</label>
+							<select
+								id='valuta'
+								name='valuta'
+								value={serviceData.valuta}
+								onChange={handleChange}
+								className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+								style={{
+									background: `var(--tg-theme-section-bg-color)`,
+									color: `var(--tg-theme-text-color)`,
+								}}
+							>
+								<option value={'руб.'}>₽</option>
+								<option value={'бел. руб.'}>Br</option>
+								<option value={'долл.'}>$</option>
+								<option value={'евро'}>€</option>
+								<option value={'груз. лари'}>₾</option>
+								<option value={'тнг'}>₸</option>
+							</select>
+							<label className='pb-2'>Время на клиента</label>
+							<select
+								id='duration'
+								name='duration'
+								value={serviceData.duration}
+								onChange={handleChange}
+								className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+								style={{
+									background: `var(--tg-theme-section-bg-color)`,
+									color: `var(--tg-theme-text-color)`,
+								}}
+							>
+								<option value={15}>15</option>
+								<option value={30}>30</option>
+								<option value={45}>45</option>
+								<option value={60}>60</option>
+								<option value={75}>75</option>
+								<option value={90}>90</option>
+								<option value={105}>105</option>
+								<option value={120}>120</option>
+								<option value={135}>135</option>
+								<option value={150}>150</option>
+								<option value={180}>180</option>
+								<option value={200}>200</option>
+								<option value={220}>220</option>
+							</select>
+						</div>
+					</div>
 					<Placeholder
 						action={
 							<ModalClose>
