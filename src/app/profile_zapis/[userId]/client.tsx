@@ -45,6 +45,7 @@ interface ClientProps {
 				specialistId: string
 				price: string | null
 				duration: number
+				valuta: string | null
 		  }[]
 		| null
 }
@@ -226,7 +227,9 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 							{service.map((item, index) => (
 								<div className='flex justify-between pt-2' key={index}>
 									<div className=' ml-6'>{item.name}</div>
-									<div className=' text-blue-500 mr-6'>{item.price} руб.</div>
+									<div className=' text-blue-500 mr-6'>
+										{item.price} {item.valuta}
+									</div>
 								</div>
 							))}
 						</div>
