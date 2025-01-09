@@ -301,7 +301,6 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 
 			const data = await response.json()
 
-			setStep(value => value + 1)
 			toast.success('Запись прошла успешно')
 		} catch (error) {
 			console.error('Ошибка при создании записи:', error)
