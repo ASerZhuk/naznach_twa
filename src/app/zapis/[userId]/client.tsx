@@ -16,6 +16,7 @@ import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { CiCalendarDate } from 'react-icons/ci'
 import {
+	AppRoot,
 	Cell,
 	Headline,
 	IconContainer,
@@ -52,6 +53,7 @@ interface ClientProps {
 		description: string | null
 		price: string | null
 		duration: number
+		valuta: string | null
 	}[]
 }
 
@@ -79,8 +81,15 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 	})
 
 	const [serviceId, setServiceId] = useState<number | null>(null)
-	const [serviceName, setServiceName] = useState<string | null>(null)
-	const [servicePrice, setServicePrice] = useState<string | null>(null)
+	const [selectedServices, setSelectedServices] = useState<
+		{ id: number; name: string; price: string | null; duration: number }[]
+	>([])
+
+	const totalPrice = selectedServices.reduce(
+		(total, srv) => total + (parseFloat(srv.price || '0') || 0),
+		0
+	)
+	const serviceNames = selectedServices.map(srv => srv.name).join(', ')
 
 	// Утилиты для работы с временем
 	const parseTime = (timeString: string): number => {
@@ -98,7 +107,7 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 
 	const getFreeSlots = (
 		appointments: { start: number; end: number }[],
-		duration: number,
+		totalDuration: number,
 		dayStart: number,
 		dayEnd: number
 	) => {
@@ -108,17 +117,17 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 		appointments.sort((a, b) => a.start - b.start)
 
 		for (const appt of appointments) {
-			while (lastEnd + duration <= appt.start) {
-				freeSlots.push({ start: lastEnd, end: lastEnd + duration })
-				lastEnd += duration
+			while (lastEnd + totalDuration <= appt.start) {
+				freeSlots.push({ start: lastEnd, end: lastEnd + totalDuration })
+				lastEnd += totalDuration
 			}
 			lastEnd = Math.max(lastEnd, appt.end)
 		}
 
 		// Проверяем наличие свободных слот после последнего занятия
-		while (lastEnd + duration <= dayEnd) {
-			freeSlots.push({ start: lastEnd, end: lastEnd + duration })
-			lastEnd += duration
+		while (lastEnd + totalDuration <= dayEnd) {
+			freeSlots.push({ start: lastEnd, end: lastEnd + totalDuration })
+			lastEnd += totalDuration
 		}
 
 		return freeSlots
@@ -129,10 +138,18 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 		name: string
 		price: string | null
 		duration: number
+		valuta: string | null
 	}) => {
-		setServiceId(srv.id)
-		setServiceName(srv.name || 'Не указано')
-		setServicePrice(srv.price || 'Нет цены')
+		// Проверяем, уже выбрана ли услуга
+		if (selectedServices.some(selected => selected.id === srv.id)) {
+			// Если выбрана, убираем из выбранных
+			setSelectedServices(prev =>
+				prev.filter(selected => selected.id !== srv.id)
+			)
+		} else {
+			// Если не выбрана, добавляем в выбранные
+			setSelectedServices(prev => [...prev, srv])
+		}
 	}
 
 	const formatDate = (date: Date | null) => {
@@ -170,29 +187,27 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 		const fetchAppointments = async () => {
 			if (selectedDate) {
 				const dayOfWeek = selectedDate.getDay()
-				const selectedDay = grafik.filter(
-					grafik => grafik.dayOfWeek === dayOfWeek
-				)
+				const selectedDay = grafik.filter(g => g.dayOfWeek === dayOfWeek)
 
 				if (selectedDay.length > 0) {
 					try {
 						const response = await fetch(
-							`/api/appointments?specialistId=${user?.userId}&date=${date}`
+							`/api/appointments?specialistId=${user.userId}&date=${formatDate(
+								selectedDate
+							)}`
 						)
 
 						if (response.ok) {
 							const appointments = await response.json()
 
 							if (Array.isArray(appointments)) {
-								// Преобразуем полученные данные о занятых слотах
-								const occupiedSlots = appointments.map(
-									(appointment: { time: string }) => {
-										const [start, end] = appointment.time.split('-')
-										return { start: parseTime(start), end: parseTime(end) }
-									}
-								)
+								// Преобразуем занятые слоты
+								const occupiedSlots = appointments.map(appointment => {
+									const [start, end] = appointment.time.split('-')
+									return { start: parseTime(start), end: parseTime(end) }
+								})
 
-								// Находим начало и конец рабочего дня из слотов
+								// Находим начало и конец рабочего дня
 								const startTime = Math.min(
 									...selectedDay.map(slot => parseTime(slot.startTime))
 								)
@@ -200,26 +215,24 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 									...selectedDay.map(slot => parseTime(slot.endTime))
 								)
 
-								// Используем продолжительность услуги для расчета свободных слотов
-								if (serviceId) {
-									const selectedService = service.find(
-										srv => srv.id === serviceId
+								// Рассчитываем свободные слоты, основываясь на всех выбранных услугах
+								const totalDuration = selectedServices.reduce(
+									(total, srv) => total + srv.duration,
+									0
+								)
+
+								const freeSlots = getFreeSlots(
+									occupiedSlots,
+									totalDuration,
+									startTime,
+									endTime
+								)
+								setAvailableTimes(
+									freeSlots.map(
+										slot =>
+											`${formatTime(slot.start)} - ${formatTime(slot.end)}`
 									)
-									if (selectedService) {
-										const freeSlots = getFreeSlots(
-											occupiedSlots,
-											selectedService.duration,
-											startTime,
-											endTime
-										)
-										setAvailableTimes(
-											freeSlots.map(
-												slot =>
-													`${formatTime(slot.start)} - ${formatTime(slot.end)}`
-											)
-										)
-									}
-								}
+								)
 							} else {
 								console.error(
 									'Ответ от API не является массивом:',
@@ -259,7 +272,7 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 
 	const handleSubmit = async () => {
 		try {
-			const response = await fetch('/api/appointments', {
+			const response = await fetch('/api/appointmentsSpec', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -270,15 +283,15 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 					phone: formData.phone,
 					specialistId: user.userId,
 					clientId: clientId?.toString(),
-					serviceId: serviceId,
-					serviceName: serviceName,
+					serviceName: serviceNames,
+					serviceIds: selectedServices.map(srv => srv.id),
 					date: date,
 					time: selectedTime,
 					specialistName: user.firstName,
 					specialistLastName: user.lastName,
 					specialistPhone: user.phone,
 					specialistAddress: user.address,
-					specialistPrice: servicePrice,
+					specialistPrice: totalPrice.toString(),
 				}),
 			})
 
@@ -287,10 +300,9 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 			}
 
 			const data = await response.json()
+
+			setStep(value => value + 1)
 			toast.success('Запись прошла успешно')
-			setTimeout(() => {
-				router.replace(`/`)
-			}, 1000)
 		} catch (error) {
 			console.error('Ошибка при создании записи:', error)
 		}
@@ -303,51 +315,70 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 			<>
 				<BackButton onClick={onBack} />
 				<MainButton text='Далее' onClick={onNext} />
-				<List>
-					<Section className='pt-2'>
-						<Cell
-							before={
-								<MdChecklist
-									size={32}
-									className='bg-blue-500 p-1 rounded-lg'
-									color='white'
-								/>
-							}
-							subtitle='Выберите нужную услугу'
-						>
-							<Headline weight='2'>Услуги</Headline>
-						</Cell>
+				<div
+					style={{ background: `var(--tg-theme-bg-color)` }}
+					className='h-full min-h-screen w-full min-w-screen m-0'
+				>
+					<div className='flex p-4 items-center'>
+						<div>
+							<MdChecklist
+								size={32}
+								className='bg-blue-500 p-1 rounded-lg'
+								color='white'
+							/>
+						</div>
+						<div className='pl-6'>
+							<div
+								style={{ color: `var(--tg-theme-text-color)` }}
+								className='text-lg font-bold'
+							>
+								Услуги
+							</div>
+							<div
+								style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+								className='text-sm'
+							>
+								Выберите нужную услугу
+							</div>
+						</div>
+					</div>
+					<div>
 						<form>
 							{service.map(srv => (
-								<Cell
+								<div
 									key={srv.id}
-									Component='label'
-									before={
-										<Radio
-											name='radio'
-											value={srv.id}
-											onChange={() => handleServiceSelect(srv)}
-										/>
-									}
-									description={srv.description}
-									multiline
-									after={
-										<Info
-											subtitle={`${srv.duration.toString()} мин.`}
-											type='text'
-										>
-											{srv.price !== null
-												? `${srv.price} руб.`
-												: 'Цена не указана'}
-										</Info>
-									}
+									className={`flex items-center justify-between p-4 cursor-pointer ${
+										selectedServices.some(selected => selected.id === srv.id)
+											? 'bg-blue-200'
+											: ''
+									}`}
+									onClick={() => handleServiceSelect(srv)} // Обработчик клика
 								>
-									{srv.name}
-								</Cell>
+									<div>
+										<div style={{ color: `var(--tg-theme-text-color)` }}>
+											{srv.name}
+										</div>
+										<div
+											style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+										>
+											{srv.description}
+										</div>
+									</div>
+									<div className='text-right'>
+										<div style={{ color: `var(--tg-theme-text-color)` }}>
+											{srv.price !== null
+												? `${srv.price} ${srv.valuta}`
+												: 'Цена не указана'}
+										</div>
+										<div
+											style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+										>{`${srv.duration.toString()} мин.`}</div>
+									</div>
+								</div>
 							))}
 						</form>
-					</Section>
-				</List>
+					</div>
+				</div>
 			</>
 		)
 	}
@@ -355,65 +386,75 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 	if (step === STEPS.DATE) {
 		bodyContent = (
 			<>
-				<BackButton onClick={onBack} />
+				<BackButton onClick={onBackStep} />
 				<MainButton text='Далее' onClick={onNext} />
-
-				<List>
-					<Section className='pt-2'>
-						<Cell
-							before={
-								<LuCalendarPlus
-									size={32}
-									className='bg-blue-500 p-1 rounded-lg'
-									color='white'
-								/>
-							}
-							subtitle='Выберите дату и время записи'
-						>
-							<Headline weight='2'>Дата и время</Headline>
-						</Cell>
-						<div className='flex-col bg-white rounded-lg shadow-md p-6 text-xl flex justify-center'>
-							<div className='mt-4 flex justify-center'>
-								<DatePicker
-									selected={selectedDate}
-									onChange={date => setSelectedDate(date)}
-									filterDate={isDayAvailable}
-									minDate={new Date()}
-									maxDate={addMonths(new Date(), 1)}
-									locale='ru'
-									inline
-									className='datepicker-custom'
-								/>
-							</div>
-
-							{selectedDate && (
-								<div className='mt-4 p-6'>
-									<div className='grid grid-cols-2 gap-4 place-items-center text-sm'>
-										{isLoading ? (
-											<Spinner size='m' />
-										) : availableTimes.length > 0 ? (
-											availableTimes.map((time, index) => (
-												<button
-													key={index}
-													onClick={() => handleTimeSelect(time)}
-													className={`px-3 py-2 rounded-full ${
-														selectedTime === time
-															? 'bg-blue-500 text-white'
-															: 'bg-blue-200 hover:bg-gray-300'
-													}`}
-												>
-													{time}
-												</button>
-											))
-										) : (
-											<p>Нет свободного времени</p>
-										)}
-									</div>
-								</div>
-							)}
+				<div
+					style={{ background: `var(--tg-theme-bg-color)` }}
+					className='h-full min-h-screen w-full min-w-screen m-0'
+				>
+					<div className='flex p-4 items-center'>
+						<div>
+							<LuCalendarPlus
+								size={32}
+								className='bg-blue-500 p-1 rounded-lg'
+								color='white'
+							/>
 						</div>
-					</Section>
-				</List>
+						<div className='pl-6'>
+							<div
+								style={{ color: `var(--tg-theme-text-color)` }}
+								className='text-lg font-bold'
+							>
+								Дата и время
+							</div>
+							<div
+								style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+								className='text-sm'
+							>
+								Выберите дату и время записи
+							</div>
+						</div>
+					</div>
+					<div>
+						<div className='mt-4 flex justify-center'>
+							<DatePicker
+								selected={selectedDate}
+								onChange={date => setSelectedDate(date)}
+								filterDate={isDayAvailable}
+								minDate={new Date()}
+								maxDate={addMonths(new Date(), 1)}
+								locale='ru'
+								inline
+								className='datepicker-custom'
+							/>
+						</div>
+						{selectedDate && (
+							<div className='mt-4 p-6 ml-0 mr-0'>
+								<div className='grid grid-cols-2 gap-4 place-items-center text-sm'>
+									{isLoading ? (
+										<Spinner size='m' />
+									) : availableTimes.length > 0 ? (
+										availableTimes.map((time, index) => (
+											<button
+												key={index}
+												onClick={() => handleTimeSelect(time)}
+												className={`px-3 py-2 rounded-full ${
+													selectedTime === time
+														? 'bg-blue-500 text-white'
+														: 'bg-white hover:bg-gray-300 text-black'
+												}`}
+											>
+												{time}
+											</button>
+										))
+									) : (
+										<p>Нет свободного времени</p>
+									)}
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
 			</>
 		)
 	}
@@ -421,22 +462,36 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 	if (step === STEPS.INFO) {
 		bodyContent = (
 			<>
-				<BackButton onClick={onBackStep} />
-				<MainButton text='Далее' onClick={onNext} />
-				<List>
-					<Section className='pt-2'>
-						<Cell
-							before={
-								<GrContactInfo
+				<AppRoot>
+					<BackButton onClick={onBackStep} />
+					<MainButton text='Далее' onClick={onNext} />
+					<div
+						style={{ background: `var(--tg-theme-bg-color)` }}
+						className='h-full min-h-screen w-full min-w-screen m-0'
+					>
+						<div className='flex p-4 items-center'>
+							<div>
+								<LuCalendarPlus
 									size={32}
 									className='bg-blue-500 p-1 rounded-lg'
 									color='white'
 								/>
-							}
-							subtitle='Введите необходимые данные'
-						>
-							<Headline weight='2'>Контактная информация</Headline>
-						</Cell>
+							</div>
+							<div className='pl-6'>
+								<div
+									style={{ color: `var(--tg-theme-text-color)` }}
+									className='text-lg font-bold'
+								>
+									Контактная информация
+								</div>
+								<div
+									style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+									className='text-sm'
+								>
+									Введите необходимые данные
+								</div>
+							</div>
+						</div>
 						<form>
 							<Input
 								status='focused'
@@ -469,107 +524,159 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 								onChange={handleChange}
 							/>
 						</form>
-					</Section>
-				</List>
+					</div>
+
+					<List>
+						<Section className='pt-2'>
+							<Cell
+								before={
+									<GrContactInfo
+										size={32}
+										className='bg-blue-500 p-1 rounded-lg'
+										color='white'
+									/>
+								}
+								subtitle='Введите необходимые данные'
+							>
+								<Headline weight='2'>Контактная информация</Headline>
+							</Cell>
+							<form>
+								<Input
+									status='focused'
+									header='Введите имя'
+									id='firstName'
+									name='firstName'
+									type='text'
+									placeholder='Иван'
+									value={formData.firstName}
+									onChange={handleChange}
+								/>
+								<Input
+									status='focused'
+									header='Введите фамилию'
+									id='lastName'
+									name='lastName'
+									type='text'
+									placeholder='Иванов'
+									value={formData.lastName}
+									onChange={handleChange}
+								/>
+								<Input
+									status='focused'
+									header='Номер телефона'
+									id='phone'
+									name='phone'
+									type='tel'
+									placeholder='+79990001111'
+									value={formData.phone}
+									onChange={handleChange}
+								/>
+							</form>
+						</Section>
+					</List>
+				</AppRoot>
 			</>
 		)
 	}
 	if (step === STEPS.CONF) {
 		bodyContent = (
 			<>
-				<BackButton onClick={onBackStep} />
-				<MainButton text='Записаться' onClick={handleSubmit} />
-				<ToastContainer />
-				<List>
-					<Section className='pt-2'>
-						<Cell
-							before={
-								<GrContactInfo
-									size={32}
-									className='bg-blue-500 p-1 rounded-lg'
-									color='white'
-								/>
-							}
-							subtitle='Проверьте данные перед записью'
-						>
-							<Headline weight='2'>Контактная информация</Headline>
-						</Cell>
-						<Cell
-							before={
-								<IconContainer>
-									<GrUser
+				<AppRoot>
+					<BackButton onClick={onBackStep} />
+					<MainButton text='Записать' onClick={handleSubmit} />
+					<ToastContainer />
+					<List>
+						<Section className='pt-2'>
+							<Cell
+								before={
+									<GrContactInfo
 										size={32}
-										className='bg-blue-500 rounded-lg p-1'
+										className='bg-blue-500 p-1 rounded-lg'
 										color='white'
 									/>
-								</IconContainer>
-							}
-							after={
-								<div className='text-blue-500'>
-									{formData.firstName} {formData.lastName}
-								</div>
-							}
-						>
-							Имя
-						</Cell>
-						<Cell
-							before={
-								<IconContainer>
-									<MdOutlinePhoneIphone
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={<div className='text-blue-500'>{formData.phone}</div>}
-						>
-							Телефон
-						</Cell>
-						<Cell
-							before={
-								<IconContainer>
-									<CiCalendarDate
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={<div className='text-blue-500'>{date}</div>}
-						>
-							Дата записи
-						</Cell>
-						<Cell
-							before={
-								<IconContainer>
-									<MdMoreTime
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={<div className='text-blue-500'>{selectedTime}</div>}
-						>
-							Время записи
-						</Cell>
-						<Cell
-							before={
-								<IconContainer>
-									<GrMoney
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</IconContainer>
-							}
-							after={<div className='text-blue-500'>{servicePrice} руб.</div>}
-						>
-							Стоимость
-						</Cell>
-					</Section>
-				</List>
+								}
+								subtitle='Проверьте данные перед записью'
+							>
+								<Headline weight='2'>Контактная информация</Headline>
+							</Cell>
+							<Cell
+								before={
+									<IconContainer>
+										<GrUser
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={
+									<div className='text-blue-500'>
+										{formData.firstName} {formData.lastName}
+									</div>
+								}
+							>
+								Имя
+							</Cell>
+
+							<Cell
+								before={
+									<IconContainer>
+										<MdOutlinePhoneIphone
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={<div className='text-blue-500'>{formData.phone}</div>}
+							>
+								Телефон
+							</Cell>
+							<Cell
+								before={
+									<IconContainer>
+										<CiCalendarDate
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={<div className='text-blue-500'>{date}</div>}
+							>
+								Дата записи
+							</Cell>
+							<Cell
+								before={
+									<IconContainer>
+										<MdMoreTime
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={<div className='text-blue-500'>{selectedTime}</div>}
+							>
+								Время записи
+							</Cell>
+							<Cell
+								before={
+									<IconContainer>
+										<GrMoney
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+									</IconContainer>
+								}
+								after={<div className='text-blue-500'>{totalPrice} руб.</div>}
+							>
+								Стоимость
+							</Cell>
+						</Section>
+					</List>
+				</AppRoot>
 			</>
 		)
 	}

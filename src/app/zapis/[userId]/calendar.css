@@ -1,12 +1,12 @@
 /* Custom CSS для DatePicker */
 .datepicker-custom {
 	border: none !important; /* Убираем обводку */
-	background-color: transparent !important;
+	background-color: var(--tg-theme-bg-color) !important;
 }
 
 .react-datepicker {
 	border: none !important;
-	background-color: white !important;
+	background-color: var(--tg-theme-bg-color) !important;
 }
 
 .react-datepicker__header {
@@ -21,6 +21,15 @@
 	border: none !important; /* Убираем обводку для дней */
 	margin: 2px 10px;
 	text-align: center;
+	color: var(--tg-theme-text-color);
+}
+
+.react-datepicker__day {
+	color: var(--tg-theme-accent-text-color);
+}
+
+.react-datepicker__day--disabled {
+	color: var(--tg-theme-subtitle-text-color);
 }
 
 .react-datepicker__day:hover {
@@ -30,4 +39,8 @@
 .react-datepicker__day--selected {
 	background-color: #3b82f6 !important; /* Цвет для выбранного дня */
 	color: white !important;
+}
+
+.react-datepicker__current-month {
+	color: var(--tg-theme-text-color);
 }
