@@ -5,14 +5,9 @@ import {
 	AppRoot,
 	Button,
 	ButtonCell,
-	Cell,
-	Headline,
-	Info,
 	Input,
-	List,
 	Modal,
 	Placeholder,
-	Section,
 	Select,
 } from '@telegram-apps/telegram-ui'
 import { ModalClose } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalClose/ModalClose'
@@ -35,7 +30,7 @@ interface TimeSlotPickerComponentProps {
 				description: string | null
 				duration: number
 				price: string | null
-				valuta: string
+				valuta: string | null
 		  }[]
 		| null
 }

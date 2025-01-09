@@ -1,6 +1,5 @@
-import Container from '@/app/components/Container'
 import { getSpecialistByUseId } from '@/app/actions/getSpecialistByUserId'
-import { AppRoot } from '@telegram-apps/telegram-ui'
+
 import { getServicesById } from '@/app/actions/getServicesById'
 import Services from './client'
 
