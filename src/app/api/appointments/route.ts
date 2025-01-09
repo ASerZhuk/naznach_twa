@@ -37,7 +37,6 @@ export async function POST(request: Request) {
 				lastName,
 				phone,
 				specialistId,
-				serviceId,
 				serviceName,
 				date,
 				time,
