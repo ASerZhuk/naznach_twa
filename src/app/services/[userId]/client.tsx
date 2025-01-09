@@ -135,7 +135,7 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 						{telegram_user?.first_name}
 					</span>
 				</div>
-				<div className='pr-4'>
+				<div className='pr-4 pt-2'>
 					<Image width={35} src='/logo.svg' alt='Логотип' />
 				</div>
 			</div>
