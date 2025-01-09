@@ -87,8 +87,15 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 	})
 
 	const [serviceId, setServiceId] = useState<number | null>(null)
-	const [serviceName, setServiceName] = useState<string | null>(null)
-	const [servicePrice, setServicePrice] = useState<string | null>(null)
+	const [selectedServices, setSelectedServices] = useState<
+		{ id: number; name: string; price: string | null; duration: number }[]
+	>([])
+
+	const totalPrice = selectedServices.reduce(
+		(total, srv) => total + (parseFloat(srv.price || '0') || 0),
+		0
+	)
+	const serviceNames = selectedServices.map(srv => srv.name).join(', ')
 
 	// Утилиты для работы с временем
 	const parseTime = (timeString: string): number => {
@@ -106,7 +113,7 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 
 	const getFreeSlots = (
 		appointments: { start: number; end: number }[],
-		duration: number,
+		totalDuration: number,
 		dayStart: number,
 		dayEnd: number
 	) => {
@@ -116,17 +123,17 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 		appointments.sort((a, b) => a.start - b.start)
 
 		for (const appt of appointments) {
-			while (lastEnd + duration <= appt.start) {
-				freeSlots.push({ start: lastEnd, end: lastEnd + duration })
-				lastEnd += duration
+			while (lastEnd + totalDuration <= appt.start) {
+				freeSlots.push({ start: lastEnd, end: lastEnd + totalDuration })
+				lastEnd += totalDuration
 			}
 			lastEnd = Math.max(lastEnd, appt.end)
 		}
 
 		// Проверяем наличие свободных слот после последнего занятия
-		while (lastEnd + duration <= dayEnd) {
-			freeSlots.push({ start: lastEnd, end: lastEnd + duration })
-			lastEnd += duration
+		while (lastEnd + totalDuration <= dayEnd) {
+			freeSlots.push({ start: lastEnd, end: lastEnd + totalDuration })
+			lastEnd += totalDuration
 		}
 
 		return freeSlots
@@ -138,9 +145,16 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 		price: string | null
 		duration: number
 	}) => {
-		setServiceId(srv.id)
-		setServiceName(srv.name || 'Не указано')
-		setServicePrice(srv.price || 'Нет цены')
+		// Проверяем, уже выбрана ли услуга
+		if (selectedServices.some(selected => selected.id === srv.id)) {
+			// Если выбрана, убираем из выбранных
+			setSelectedServices(prev =>
+				prev.filter(selected => selected.id !== srv.id)
+			)
+		} else {
+			// Если не выбрана, добавляем в выбранные
+			setSelectedServices(prev => [...prev, srv])
+		}
 	}
 
 	const formatDate = (date: Date | null) => {
@@ -178,29 +192,27 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 		const fetchAppointments = async () => {
 			if (selectedDate) {
 				const dayOfWeek = selectedDate.getDay()
-				const selectedDay = grafik.filter(
-					grafik => grafik.dayOfWeek === dayOfWeek
-				)
+				const selectedDay = grafik.filter(g => g.dayOfWeek === dayOfWeek)
 
 				if (selectedDay.length > 0) {
 					try {
 						const response = await fetch(
-							`/api/appointments?specialistId=${user?.userId}&date=${date}`
+							`/api/appointments?specialistId=${user.userId}&date=${formatDate(
+								selectedDate
+							)}`
 						)
 
 						if (response.ok) {
 							const appointments = await response.json()
 
 							if (Array.isArray(appointments)) {
-								// Преобразуем полученные данные о занятых слотах
-								const occupiedSlots = appointments.map(
-									(appointment: { time: string }) => {
-										const [start, end] = appointment.time.split('-')
-										return { start: parseTime(start), end: parseTime(end) }
-									}
-								)
+								// Преобразуем занятые слоты
+								const occupiedSlots = appointments.map(appointment => {
+									const [start, end] = appointment.time.split('-')
+									return { start: parseTime(start), end: parseTime(end) }
+								})
 
-								// Находим начало и конец рабочего дня из слотов
+								// Находим начало и конец рабочего дня
 								const startTime = Math.min(
 									...selectedDay.map(slot => parseTime(slot.startTime))
 								)
@@ -208,26 +220,24 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 									...selectedDay.map(slot => parseTime(slot.endTime))
 								)
 
-								// Используем продолжительность услуги для расчета свободных слотов
-								if (serviceId) {
-									const selectedService = service.find(
-										srv => srv.id === serviceId
+								// Рассчитываем свободные слоты, основываясь на всех выбранных услугах
+								const totalDuration = selectedServices.reduce(
+									(total, srv) => total + srv.duration,
+									0
+								)
+
+								const freeSlots = getFreeSlots(
+									occupiedSlots,
+									totalDuration,
+									startTime,
+									endTime
+								)
+								setAvailableTimes(
+									freeSlots.map(
+										slot =>
+											`${formatTime(slot.start)} - ${formatTime(slot.end)}`
 									)
-									if (selectedService) {
-										const freeSlots = getFreeSlots(
-											occupiedSlots,
-											selectedService.duration,
-											startTime,
-											endTime
-										)
-										setAvailableTimes(
-											freeSlots.map(
-												slot =>
-													`${formatTime(slot.start)} - ${formatTime(slot.end)}`
-											)
-										)
-									}
-								}
+								)
 							} else {
 								console.error(
 									'Ответ от API не является массивом:',
@@ -278,15 +288,14 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 					phone: formData.phone,
 					specialistId: user.userId,
 					clientId: clientId?.toString(),
-					serviceId: serviceId,
-					serviceName: serviceName,
+					serviceName: serviceNames,
 					date: date,
 					time: selectedTime,
 					specialistName: user.firstName,
 					specialistLastName: user.lastName,
 					specialistPhone: user.phone,
 					specialistAddress: user.address,
-					specialistPrice: servicePrice,
+					specialistPrice: totalPrice.toString(),
 				}),
 			})
 
@@ -343,8 +352,10 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 								<div
 									key={srv.id}
 									className={`flex items-center justify-between p-4 cursor-pointer ${
-										serviceId === srv.id ? 'bg-blue-200' : ''
-									}`} // Измените цвет фона при выборе
+										selectedServices.some(selected => selected.id === srv.id)
+											? 'bg-blue-200'
+											: ''
+									}`}
 									onClick={() => handleServiceSelect(srv)} // Обработчик клика
 								>
 									<div>
@@ -611,6 +622,7 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 							>
 								Имя
 							</Cell>
+
 							<Cell
 								before={
 									<IconContainer>
@@ -663,7 +675,7 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 										/>
 									</IconContainer>
 								}
-								after={<div className='text-blue-500'>{servicePrice} руб.</div>}
+								after={<div className='text-blue-500'>{totalPrice} руб.</div>}
 							>
 								Стоимость
 							</Cell>
@@ -674,7 +686,7 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 		)
 	}
 
-	const message = `Вы записаны на ${date} в ${selectedTime} к мастеру ${user.firstName} ${user.lastName} к оплате ${servicePrice} руб.\nТелефон для связи ${user.phone}\n\nУведомление из приложения:\nhttps://t.me/naznach_twa_bot`
+	const message = `Вы записаны на ${date} в ${selectedTime} к мастеру ${user.firstName} ${user.lastName} к оплате ${totalPrice} руб.\nТелефон для связи ${user.phone}\n\nУведомление из приложения:\nhttps://t.me/naznach_twa_bot`
 	const encodedMessage = encodeURIComponent(message)
 
 	if (step === STEPS.NOT) {

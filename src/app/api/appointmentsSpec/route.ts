@@ -18,7 +18,6 @@ export async function POST(request: Request) {
 			lastName,
 			phone,
 			specialistId,
-			serviceId,
 			serviceName,
 			date,
 			time,
@@ -37,7 +36,6 @@ export async function POST(request: Request) {
 				lastName,
 				phone,
 				specialistId,
-				serviceId,
 				serviceName,
 				date,
 				time,
@@ -65,6 +63,7 @@ export async function POST(request: Request) {
 
 		return NextResponse.json({ appointment })
 	} catch (error) {
+		console.error('Ошибка при создании записи:', error)
 		return NextResponse.json(
 			{ error: 'Ошибка при создании записи' },
 			{ status: 500 }

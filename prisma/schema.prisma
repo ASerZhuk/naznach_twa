@@ -55,8 +55,8 @@ model Service {
   description    String?
   price          String?
   duration       Int        
-
-  appointments   Appointments[] 
+  valuta         String?
+  appointments     Appointments [] @relation("AppointmentServices")
   specialist     Specialist  @relation(fields: [specialistId], references: [userId])
 }
 
@@ -78,7 +78,6 @@ model Appointments {
   firstName         String
   lastName          String
   specialistId      String
-  serviceId         Int
   serviceName       String?
   date              String
   time              String
@@ -89,7 +88,7 @@ model Appointments {
   specialistPrice    String?
   specialistPhone    String?
   specialist        Specialist  @relation(fields: [specialistId], references: [userId])
-  service           Service     @relation(fields: [serviceId], references: [id])
+  services        Service[] @relation("AppointmentServices")
 }
 
 

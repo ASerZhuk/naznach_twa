@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 
 export async function POST(req: Request) {
 	const body = await req.json()
-	const { specialistId, name, description, duration, price } = body
+	const { specialistId, name, description, duration, price, valuta } = body
 	const interval = duration
 
 	try {
@@ -17,6 +17,7 @@ export async function POST(req: Request) {
 				description,
 				duration,
 				price,
+				valuta,
 			},
 		})
 
