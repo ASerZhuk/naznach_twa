@@ -122,7 +122,7 @@ const Main = ({ user }: MainProps) => {
 					before={
 						<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
 					}
-					after={<Image width={150} src='/logo.svg' alt='Логотип' />}
+					after={<Image width={35} src='/logo.svg' alt='Логотип' />}
 				>
 					{user.firstName}
 				</Cell>

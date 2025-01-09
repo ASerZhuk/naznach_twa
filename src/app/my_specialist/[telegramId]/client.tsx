@@ -118,7 +118,7 @@ const MySpecialist: React.FC<MySpecialistProps> = ({ appointment }) => {
 					before={
 						<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
 					}
-					after={<Image width={150} src='/logo.svg' alt='Логотип' />}
+					after={<Image width={35} src='/logo.svg' alt='Логотип' />}
 				>
 					{telegram_user?.first_name}
 				</Cell>

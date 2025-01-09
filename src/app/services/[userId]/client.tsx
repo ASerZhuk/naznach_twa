@@ -136,7 +136,7 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 					</span>
 				</div>
 				<div className='pr-4'>
-					<Image width={150} src='/logo.svg' alt='Логотип' />
+					<Image width={35} src='/logo.svg' alt='Логотип' />
 				</div>
 			</div>
 
