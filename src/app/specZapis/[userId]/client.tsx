@@ -53,6 +53,7 @@ interface SpecZapisProps {
 		name: string
 		description: string | null
 		price: string | null
+		valuta: string | null
 		duration: number
 	}[]
 	grafik: {
@@ -144,6 +145,7 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 		name: string
 		price: string | null
 		duration: number
+		valuta: string | null
 	}) => {
 		// Проверяем, уже выбрана ли услуга
 		if (selectedServices.some(selected => selected.id === srv.id)) {
@@ -289,6 +291,7 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 					specialistId: user.userId,
 					clientId: clientId?.toString(),
 					serviceName: serviceNames,
+					serviceIds: selectedServices.map(srv => srv.id),
 					date: date,
 					time: selectedTime,
 					specialistName: user.firstName,
@@ -371,7 +374,7 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 									<div className='text-right'>
 										<div style={{ color: `var(--tg-theme-text-color)` }}>
 											{srv.price !== null
-												? `${srv.price} руб.`
+												? `${srv.price} ${srv.valuta}`
 												: 'Цена не указана'}
 										</div>
 										<div

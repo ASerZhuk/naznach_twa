@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import TelegramBot from 'node-telegram-bot-api'
+import { connect } from 'http2'
 
 const prisma = new PrismaClient()
 
@@ -18,6 +19,7 @@ export async function POST(request: Request) {
 			lastName,
 			phone,
 			specialistId,
+			serviceIds,
 			serviceName,
 			date,
 			time,
@@ -27,6 +29,21 @@ export async function POST(request: Request) {
 			specialistPhone,
 			specialistAddress,
 			specialistPrice,
+		}: {
+			firstName: string
+			lastName: string
+			phone: string
+			specialistId: string
+			serviceIds: number[]
+			serviceName: string
+			date: string
+			time: string
+			clientId: string
+			specialistName: string
+			specialistLastName: string
+			specialistPhone: string
+			specialistAddress: string
+			specialistPrice: string
 		} = body
 
 		// Вставка данных в базу данных
@@ -45,6 +62,13 @@ export async function POST(request: Request) {
 				specialistPhone,
 				specialistAddress,
 				specialistPrice,
+				services: {
+					create: serviceIds.map(serviceId => ({
+						service: {
+							connect: { id: serviceId },
+						},
+					})),
+				},
 			},
 		})
 

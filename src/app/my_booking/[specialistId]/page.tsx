@@ -18,5 +18,9 @@ export default async function MyBooking({ params }: MyBookingProps) {
 		return <div>Ошибка загрузки данных о встречах</div>
 	}
 
-	return <MySpecialBooking appointment={appointment} />
+	return (
+		<Container>
+			<MySpecialBooking appointment={appointment} />
+		</Container>
+	)
 }

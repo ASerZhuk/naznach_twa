@@ -127,145 +127,171 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 	return (
 		<>
 			<ToastContainer />
-			<AppRoot>
-				<Section className='pt-2 mb-4'>
-					<Cell
-						before={
-							<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
-						}
-						after={<Image width={150} src='/logo.svg' alt='Логотип' />}
+			<div
+				className='flex items-center justify-between'
+				style={{ background: `var(--tg-theme-bg-color)` }}
+			>
+				<div className='pl-4 pt-2'>
+					<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
+					<span
+						style={{ color: `var(--tg-theme-text-color)` }}
+						className='pl-2'
 					>
 						{telegram_user?.first_name}
-					</Cell>
-				</Section>
+					</span>
+				</div>
+				<div className='pr-4'>
+					<Image width={150} src='/logo.svg' alt='Логотип' />
+				</div>
+			</div>
 
-				<List>
-					<Section>
-						<Cell
-							before={
-								<GrTask
-									size={32}
-									className='bg-blue-500 p-1 rounded-lg'
-									color='white'
-								/>
-							}
-							subtitle='Добавляйте и удаляйте свои услуги'
-						>
-							<Headline weight='2'>Мои услуги</Headline>
-						</Cell>
-						{serviceList.length === 0 ? (
-							<Cell>
-								<Headline weight='2'>У вас пока нет услуг.</Headline>
-							</Cell>
-						) : (
-							serviceList.map(service => (
-								<Cell
-									after={
-										<Info
-											subtitle={`${service.duration.toString()} мин.`}
-											type='text'
-										>
-											{service.price} {service.valuta}
-										</Info>
-									}
-									subtitle={service.description}
-									key={service.id}
-								>
+			<div className='flex p-4 items-center mt-2'>
+				<div>
+					<GrTask
+						size={32}
+						className='bg-blue-500 p-1 rounded-lg'
+						color='white'
+					/>
+				</div>
+				<div className='pl-6'>
+					<div
+						style={{ color: `var(--tg-theme-text-color)` }}
+						className='text-lg font-bold'
+					>
+						Мои услуги
+					</div>
+					<div
+						style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+						className='text-sm'
+					>
+						Добавляйте и удаляйте свои услуги
+					</div>
+				</div>
+			</div>
+
+			<div>
+				{serviceList.length === 0 ? (
+					<div
+						className='pl-4 pb-4 text-lg'
+						style={{ color: `var(--tg-theme-text-color)` }}
+					>
+						У вас пока нет услуг.
+					</div>
+				) : (
+					serviceList.map(service => (
+						<div className='flex items-center justify-between p-4'>
+							<div>
+								<div style={{ color: `var(--tg-theme-text-color)` }}>
 									{service.name}
-								</Cell>
-							))
-						)}
-						<Modal
-							trigger={
-								<ButtonCell
-									before={<Icon28AddCircleOutline />}
-									interactiveAnimation='opacity'
-									mode='default'
-								>
-									Добавить услугу
-								</ButtonCell>
-							}
+								</div>
+								<div style={{ color: `var(--tg-theme-subtitle-text-color)` }}>
+									{service.description}
+								</div>
+							</div>
+							<div className='text-right'>
+								<div style={{ color: `var(--tg-theme-text-color)` }}>
+									{service.price !== null
+										? `${service.price} ${service.valuta}`
+										: 'Цена не указана'}
+								</div>
+								<div
+									style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+								>{`${service.duration.toString()} мин.`}</div>
+							</div>
+						</div>
+					))
+				)}
+			</div>
+			<AppRoot>
+				<Modal
+					trigger={
+						<ButtonCell
+							before={<Icon28AddCircleOutline />}
+							interactiveAnimation='opacity'
+							mode='default'
 						>
-							<ModalHeader></ModalHeader>
-							<Input
-								id='name'
-								name='name'
-								value={serviceData.name}
-								status='focused'
-								header='Название услуги'
-								type='text'
-								placeholder='Маникюр'
-								onChange={handleChange}
-							/>
-							<Input
-								id='description'
-								name='description'
-								value={serviceData.description}
-								status='focused'
-								header='Описание услуги'
-								type='text'
-								placeholder='Описание услуги'
-								onChange={handleChange}
-							/>
-							<Input
-								id='price'
-								name='price'
-								value={serviceData.price}
-								status='focused'
-								header='Стоимость'
-								type='number'
-								placeholder='2500'
-								onChange={handleChange}
-							/>
-							<Select
-								id='valuta'
-								name='valuta'
-								value={serviceData.valuta}
-								status='focused'
-								header='Валюта'
-								onChange={handleChange}
-							>
-								<option value={'руб.'}>₽</option>
-								<option value={'бел. руб.'}>BYN</option>
-								<option value={'долл.'}>$</option>
-								<option value={'евро'}>€</option>
-								<option value={'гр. лари'}>₾</option>
-								<option value={'тнг'}>₸</option>
-							</Select>
-							<Select
-								id='duration'
-								name='duration'
-								value={serviceData.duration}
-								status='focused'
-								header='Длительность услуги(мин.)'
-								onChange={handleChange}
-							>
-								<option value={15}>15</option>
-								<option value={30}>30</option>
-								<option value={45}>45</option>
-								<option value={60}>60</option>
-								<option value={75}>75</option>
-								<option value={90}>90</option>
-								<option value={105}>105</option>
-								<option value={120}>120</option>
-								<option value={135}>135</option>
-								<option value={150}>150</option>
-								<option value={180}>180</option>
-								<option value={200}>200</option>
-								<option value={220}>220</option>
-							</Select>
-							<Placeholder
-								action={
-									<ModalClose>
-										<Button onClick={handleSubmit} size='m'>
-											Добавить услугу
-										</Button>
-									</ModalClose>
-								}
-							></Placeholder>
-						</Modal>
-					</Section>
-				</List>
+							Добавить услугу
+						</ButtonCell>
+					}
+				>
+					<ModalHeader></ModalHeader>
+					<Input
+						id='name'
+						name='name'
+						value={serviceData.name}
+						status='focused'
+						header='Название услуги'
+						type='text'
+						placeholder='Маникюр'
+						onChange={handleChange}
+					/>
+					<Input
+						id='description'
+						name='description'
+						value={serviceData.description}
+						status='focused'
+						header='Описание услуги'
+						type='text'
+						placeholder='Описание услуги'
+						onChange={handleChange}
+					/>
+					<Input
+						id='price'
+						name='price'
+						value={serviceData.price}
+						status='focused'
+						header='Стоимость'
+						type='number'
+						placeholder='2500'
+						onChange={handleChange}
+					/>
+					<Select
+						id='valuta'
+						name='valuta'
+						value={serviceData.valuta}
+						status='focused'
+						header='Валюта'
+						onChange={handleChange}
+					>
+						<option value={'руб.'}>₽</option>
+						<option value={'бел. руб.'}>Br</option>
+						<option value={'долл.'}>$</option>
+						<option value={'евро'}>€</option>
+						<option value={'груз. лари'}>₾</option>
+						<option value={'тнг'}>₸</option>
+					</Select>
+					<Select
+						id='duration'
+						name='duration'
+						value={serviceData.duration}
+						status='focused'
+						header='Длительность услуги(мин.)'
+						onChange={handleChange}
+					>
+						<option value={15}>15</option>
+						<option value={30}>30</option>
+						<option value={45}>45</option>
+						<option value={60}>60</option>
+						<option value={75}>75</option>
+						<option value={90}>90</option>
+						<option value={105}>105</option>
+						<option value={120}>120</option>
+						<option value={135}>135</option>
+						<option value={150}>150</option>
+						<option value={180}>180</option>
+						<option value={200}>200</option>
+						<option value={220}>220</option>
+					</Select>
+					<Placeholder
+						action={
+							<ModalClose>
+								<Button onClick={handleSubmit} size='m'>
+									Добавить услугу
+								</Button>
+							</ModalClose>
+						}
+					></Placeholder>
+				</Modal>
 			</AppRoot>
 		</>
 	)

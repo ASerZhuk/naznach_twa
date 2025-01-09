@@ -42,7 +42,6 @@ interface ClientProps {
 		firstName: string
 		lastName: string
 		specialistId: string
-		serviceId: number
 		date: string
 		time: string
 		phone: string
@@ -67,13 +66,24 @@ interface ClientProps {
 		price: string | null
 		duration: number
 	}[]
+	serviceIds: {
+		id: number
+		appointmentId: number
+		serviceId: number
+	}[]
 }
 enum STEPS {
 	DATE = 0,
 	NOT = 1,
 }
 
-const Perezapis = ({ user, grafik, appointments, service }: ClientProps) => {
+const Perezapis = ({
+	user,
+	grafik,
+	appointments,
+	service,
+	serviceIds,
+}: ClientProps) => {
 	const router = useRouter()
 	const [step, setStep] = useState(STEPS.DATE)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -187,25 +197,37 @@ const Perezapis = ({ user, grafik, appointments, service }: ClientProps) => {
 									...selectedDay.map(slot => parseTime(slot.endTime))
 								)
 
-								// Здесь мы используем serviceId из переданного appointment
-								if (appointments.serviceId) {
-									const selectedService = service.find(
-										srv => srv.id === appointments.serviceId
+								if (serviceIds && serviceIds.length > 0) {
+									const serviceIdsArray = serviceIds.map(
+										idObj => idObj.serviceId
 									)
-									if (selectedService) {
-										const freeSlots = getFreeSlots(
-											occupiedSlots,
-											selectedService.duration,
-											startTime,
-											endTime
+									const selectedServices = service.filter(srv =>
+										serviceIdsArray.includes(srv.id)
+									)
+
+									const totalDuration = selectedServices.reduce(
+										(total, srv) => total + srv.duration,
+										0
+									)
+
+									console.log('Total Duration:', totalDuration) // Можно удалить это, если не нужно
+
+									const freeSlots = getFreeSlots(
+										occupiedSlots,
+										totalDuration,
+										startTime,
+										endTime
+									)
+
+									setAvailableTimes(
+										freeSlots.map(
+											slot =>
+												`${formatTime(slot.start)} - ${formatTime(slot.end)}`
 										)
-										setAvailableTimes(
-											freeSlots.map(
-												slot =>
-													`${formatTime(slot.start)} - ${formatTime(slot.end)}`
-											)
-										)
-									}
+									)
+								} else {
+									console.error('Не указаны идентификаторы услуг')
+									setAvailableTimes([])
 								}
 							} else {
 								console.error(

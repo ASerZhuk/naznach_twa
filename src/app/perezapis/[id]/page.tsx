@@ -6,6 +6,7 @@ import { getAppointmentById } from '@/app/actions/getAppointmentById'
 import Perezapis from './client'
 
 import { getServicesById } from '@/app/actions/getServicesById'
+import { getServiceIdById } from '@/app/actions/getServiceIdById'
 interface PereZapisPageProps {
 	params: {
 		id: number
@@ -18,7 +19,7 @@ interface Appointment {
 	firstName: string
 	lastName: string
 	specialistId: string
-	serviceId: number
+
 	date: string
 	time: string
 	phone: string
@@ -49,6 +50,7 @@ const page = async ({ params }: PereZapisPageProps) => {
 	}
 
 	const grafik = (await getGrafikById(appointment.specialistId)) || []
+	const serviceIds = await getServiceIdById(appointment.id)
 	const service = await getServicesById(appointment.specialistId)
 
 	return (
@@ -57,6 +59,7 @@ const page = async ({ params }: PereZapisPageProps) => {
 			user={user}
 			service={service || []}
 			appointments={appointment}
+			serviceIds={serviceIds || []}
 		/>
 	)
 }

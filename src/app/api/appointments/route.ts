@@ -145,14 +145,28 @@ export async function DELETE(req: Request) {
 		}
 
 		// Проверка наличия записи перед удалением
+		const appointmentServoces = await prisma.appointmentServices.findMany({
+			where: { appointmentId: appointmentIdNum },
+		})
 		const appointment = await prisma.appointments.findUnique({
 			where: { id: appointmentIdNum },
 		})
+
+		if (!appointmentServoces) {
+			console.error(`Запись с ID ${appointmentIdNum} не найдена`)
+			return NextResponse.json({ error: 'Запись не найдена' }, { status: 404 })
+		}
 
 		if (!appointment) {
 			console.error(`Запись с ID ${appointmentIdNum} не найдена`)
 			return NextResponse.json({ error: 'Запись не найдена' }, { status: 404 })
 		}
+
+		await prisma.appointmentServices.deleteMany({
+			where: {
+				appointmentId: appointmentIdNum,
+			},
+		})
 
 		// Удаляем запись из базы данных
 		await prisma.appointments.delete({
