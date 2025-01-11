@@ -59,6 +59,8 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 	// Состояние для списка услуг
 	const [serviceList, setServiceList] = useState(services || [])
 
+	const [editingService, setEditingService] = useState<any>(null)
+
 	const handleChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
 	) => {
@@ -116,6 +118,71 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 		} catch (error) {
 			toast.error('Произошла ошибка при добавлении услуги')
 		}
+	}
+
+	const handleEditSubmit = async () => {
+		const { name, description, price, duration, valuta } = serviceData
+
+		// Basic validation
+		if (!name || !description || !price || !duration || !valuta) {
+			toast.error('Пожалуйста, заполните все поля.')
+			return
+		}
+
+		try {
+			// Формируем данные для отправки
+			const requestData = {
+				name,
+				description,
+				price,
+				duration: parseInt(duration, 10),
+				specialistId: String(specialistId),
+				valuta,
+			}
+
+			// Отправляем данные для редактирования
+			const response = await fetch(`/api/services?id=${editingService.id}`, {
+				method: 'PUT', // Используем метод PUT для обновления
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(requestData),
+			})
+
+			if (response.ok) {
+				const updatedService = await response.json()
+				// Обновляем услугу в списке
+				setServiceList(prev =>
+					prev.map(service =>
+						service.id === updatedService.id ? updatedService : service
+					)
+				)
+				toast.success('Услуга успешно обновлена')
+				setServiceData({
+					name: '',
+					description: '',
+					price: '',
+					duration: '',
+					valuta: '',
+				})
+				setEditingService(null) // Закрытие формы редактирования
+			} else {
+				toast.error('Ошибка при обновлении услуги')
+			}
+		} catch (error) {
+			toast.error('Произошла ошибка при обновлении услуги')
+		}
+	}
+
+	const handleEdit = (service: any) => {
+		setEditingService(service)
+		setServiceData({
+			name: service.name || '',
+			description: service.description || '',
+			price: service.price || '',
+			duration: String(service.duration) || '15',
+			valuta: service.valuta || 'руб.',
+		})
 	}
 
 	const handleDelete = async (id: number) => {
@@ -231,11 +298,120 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 								>{`${service.duration.toString()} мин.`}</div>
 							</div>
 							<div className='basis-1/8'>
-								<FaRegEdit
-									size={32}
-									className='bg-green-500 p-1 rounded-lg mb-2'
-									color='white'
-								/>
+								<AppRoot>
+									<Modal
+										trigger={
+											<FaRegEdit
+												size={32}
+												className='bg-green-500 p-1 rounded-lg mb-2'
+												color='white'
+												onClick={() => handleEdit(service)}
+											/>
+										}
+									>
+										<ModalHeader></ModalHeader>
+										<div className='pl-4 pr-4'>
+											<label className='pb-2'>Название услуги</label>
+											<Input
+												id='name'
+												name='name'
+												value={serviceData.name}
+												type='text'
+												placeholder='Маникюр'
+												onChange={handleChange}
+												className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+												style={{
+													background: `var(--tg-theme-section-bg-color)`,
+													color: `var(--tg-theme-text-color)`,
+												}}
+											/>
+											<label className='pb-2'>Описание услуги</label>
+											<Input
+												id='description'
+												name='description'
+												value={serviceData.description}
+												type='text'
+												placeholder='Обычная услуга'
+												onChange={handleChange}
+												className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+												style={{
+													background: `var(--tg-theme-section-bg-color)`,
+													color: `var(--tg-theme-text-color)`,
+												}}
+											/>
+											<label className='pb-2'>Стоимость услуги</label>
+											<Input
+												id='price'
+												name='price'
+												value={serviceData.price}
+												type='number'
+												placeholder='2500'
+												onChange={handleChange}
+												className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+												style={{
+													background: `var(--tg-theme-section-bg-color)`,
+													color: `var(--tg-theme-text-color)`,
+												}}
+											/>
+											<div className='flex flex-col'>
+												<label className='pb-2'>Валюта</label>
+												<select
+													id='valuta'
+													name='valuta'
+													value={serviceData.valuta}
+													onChange={handleChange}
+													className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+													style={{
+														background: `var(--tg-theme-section-bg-color)`,
+														color: `var(--tg-theme-text-color)`,
+													}}
+												>
+													<option value={'руб.'}>₽</option>
+													<option value={'бел. руб.'}>Br</option>
+													<option value={'долл.'}>$</option>
+													<option value={'евро'}>€</option>
+													<option value={'груз. лари'}>₾</option>
+													<option value={'тнг'}>₸</option>
+												</select>
+												<label className='pb-2'>Время на клиента</label>
+												<select
+													id='duration'
+													name='duration'
+													value={serviceData.duration}
+													onChange={handleChange}
+													className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+													style={{
+														background: `var(--tg-theme-section-bg-color)`,
+														color: `var(--tg-theme-text-color)`,
+													}}
+												>
+													<option value={15}>15</option>
+													<option value={30}>30</option>
+													<option value={45}>45</option>
+													<option value={60}>60</option>
+													<option value={75}>75</option>
+													<option value={90}>90</option>
+													<option value={105}>105</option>
+													<option value={120}>120</option>
+													<option value={135}>135</option>
+													<option value={150}>150</option>
+													<option value={180}>180</option>
+													<option value={200}>200</option>
+													<option value={220}>220</option>
+												</select>
+											</div>
+										</div>
+										<Placeholder
+											action={
+												<ModalClose>
+													<Button onClick={handleEditSubmit} size='m'>
+														Сохранить изменения
+													</Button>
+												</ModalClose>
+											}
+										></Placeholder>
+									</Modal>
+								</AppRoot>
 								<MdDeleteForever
 									size={32}
 									className='bg-red-500 p-1 rounded-lg'
