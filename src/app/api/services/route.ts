@@ -41,17 +41,93 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-	const { id } = await req.json()
+	const { searchParams } = new URL(req.url)
+	const serviceId = searchParams.get('id')
+
+	if (!serviceId) {
+		return NextResponse.json({ error: 'ID не указан' }, { status: 400 })
+	}
+
+	const serviceIdIdNum = parseInt(serviceId)
 
 	try {
-		await prisma.service.delete({
-			where: { id },
+		const service = await prisma.service.findUnique({
+			where: { id: serviceIdIdNum },
 		})
-		return NextResponse.json({}, { status: 204 })
+
+		if (!service) {
+			console.error(`Услуга с ID ${serviceIdIdNum} не найдена`)
+			return NextResponse.json({ error: 'Услуга не найдена' }, { status: 404 })
+		}
+
+		// Проверка наличия записей перед удалением
+		const appointmentServices = await prisma.appointmentServices.findMany({
+			where: { serviceId: serviceIdIdNum },
+		})
+
+		// Удаляем все связанные записи, если они есть
+		if (appointmentServices.length > 0) {
+			await prisma.appointmentServices.deleteMany({
+				where: { serviceId: serviceIdIdNum },
+			})
+		}
+
+		await prisma.service.delete({
+			where: { id: serviceIdIdNum },
+		})
+
+		return new NextResponse(null, { status: 204 }) // Возвращает 204 No Content
 	} catch (error) {
-		console.error('Error deleting service:', error)
+		console.error('Ошибка при удалении услуги:', error)
 		return NextResponse.json(
-			{ error: 'Failed to delete service' },
+			{ error: 'Ошибка при удалении услуги' },
+			{ status: 500 }
+		)
+	}
+}
+
+// Метод для редактирования услуги
+export async function PUT(req: Request) {
+	const { searchParams } = new URL(req.url)
+	const serviceId = searchParams.get('id')
+
+	if (!serviceId) {
+		return NextResponse.json({ error: 'ID не указан' }, { status: 400 })
+	}
+
+	const serviceIdIdNum = parseInt(serviceId)
+	const body = await req.json()
+	const { specialistId, name, description, duration, price, valuta } = body
+
+	try {
+		// Ищем услугу по ID
+		const service = await prisma.service.findUnique({
+			where: { id: serviceIdIdNum },
+		})
+
+		if (!service) {
+			console.error(`Услуга с ID ${serviceIdIdNum} не найдена`)
+			return NextResponse.json({ error: 'Услуга не найдена' }, { status: 404 })
+		}
+
+		// Обновляем услугу
+		const updatedService = await prisma.service.update({
+			where: { id: serviceIdIdNum },
+			data: {
+				specialistId,
+				name,
+				description,
+				duration,
+				price,
+				valuta,
+			},
+		})
+
+		return NextResponse.json(updatedService, { status: 200 })
+	} catch (error) {
+		console.error('Ошибка при обновлении услуги:', error)
+		return NextResponse.json(
+			{ error: 'Ошибка при обновлении услуги' },
 			{ status: 500 }
 		)
 	}
