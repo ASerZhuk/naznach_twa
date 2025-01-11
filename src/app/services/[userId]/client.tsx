@@ -5,16 +5,24 @@ import {
 	AppRoot,
 	Button,
 	ButtonCell,
+	Cell,
+	Headline,
+	Info,
+	List,
 	Modal,
 	Placeholder,
+	Section,
+	Select,
 } from '@telegram-apps/telegram-ui'
 import { ModalClose } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalClose/ModalClose'
 import { ModalHeader } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalHeader/ModalHeader'
 import { Icon28AddCircleOutline } from '@vkontakte/icons'
-import { Avatar, Image, Input } from 'antd'
+import { Alert, Avatar, Image, Input, Space } from 'antd'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { FaRegEdit } from 'react-icons/fa'
 import { GrTask } from 'react-icons/gr'
+import { MdDeleteForever } from 'react-icons/md'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -39,6 +47,7 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 }) => {
 	const router = useRouter()
 	const { telegram_user, userPhoto } = useTelegramUserProfile()
+
 	const [serviceData, setServiceData] = useState({
 		name: '',
 		description: '',
@@ -106,6 +115,25 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 			}
 		} catch (error) {
 			toast.error('Произошла ошибка при добавлении услуги')
+		}
+	}
+
+	const handleDelete = async (id: number) => {
+		try {
+			const response = await fetch(`/api/services?id=${id}`, {
+				method: 'DELETE',
+				headers: { 'Content-Type': 'application/json' },
+			})
+
+			if (response.ok) {
+				// Если удаление прошло успешно, обновляем состояние
+				setServiceList(prev => prev.filter(service => service.id !== id))
+				toast.success('Услуга успешно удалена')
+			} else {
+				toast.error('Ошибка при удалении услуги')
+			}
+		} catch (error) {
+			toast.error('Произошла ошибка при удалении услуги')
 		}
 	}
 
@@ -180,9 +208,10 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 					serviceList.map(service => (
 						<div
 							key={service.id}
-							className='flex items-center justify-between p-4'
+							className='flex flex-row items-center p-4 border-b'
+							style={{ borderColor: `var(--tg-theme-subtitle-text-color)` }}
 						>
-							<div>
+							<div className='basis-1/2'>
 								<div style={{ color: `var(--tg-theme-text-color)` }}>
 									{service.name}
 								</div>
@@ -190,7 +219,8 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 									{service.description}
 								</div>
 							</div>
-							<div className='text-right'>
+
+							<div className='text-right basis-1/2 pr-4'>
 								<div style={{ color: `var(--tg-theme-text-color)` }}>
 									{service.price !== null
 										? `${service.price} ${service.valuta}`
@@ -199,6 +229,19 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 								<div
 									style={{ color: `var(--tg-theme-subtitle-text-color)` }}
 								>{`${service.duration.toString()} мин.`}</div>
+							</div>
+							<div className='basis-1/8'>
+								<FaRegEdit
+									size={32}
+									className='bg-green-500 p-1 rounded-lg mb-2'
+									color='white'
+								/>
+								<MdDeleteForever
+									size={32}
+									className='bg-red-500 p-1 rounded-lg'
+									color='white'
+									onClick={() => handleDelete(service.id)}
+								/>
 							</div>
 						</div>
 					))
