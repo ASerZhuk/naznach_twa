@@ -297,7 +297,7 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 					specialistId: user.userId,
 					clientId: clientId?.toString(),
 					serviceName: serviceNames,
-					serviceValuta: srvValuta.toString(),
+					serviceValuta: selectedServices[0]?.valuta,
 					serviceIds: selectedServices.map(srv => srv.id),
 					date: date,
 					time: selectedTime,
@@ -655,11 +655,13 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 										color='white'
 									/>
 								</div>
-								{selectedServices.map(srv => (
+
+								<div>
 									<span className='pl-4'>
-										К оплате: {totalPrice} {srv.valuta}
+										У оплате: {totalPrice.toFixed(0)}{' '}
+										{selectedServices[0]?.valuta}
 									</span>
-								))}
+								</div>
 							</div>
 						</div>
 					</div>

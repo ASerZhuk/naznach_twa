@@ -15,20 +15,10 @@ import { MdChecklist, MdMoreTime, MdOutlinePhoneIphone } from 'react-icons/md'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { CiCalendarDate } from 'react-icons/ci'
-import {
-	AppRoot,
-	Cell,
-	Headline,
-	IconContainer,
-	Info,
-	Input,
-	List,
-	Placeholder,
-	Radio,
-	Section,
-	Spinner,
-} from '@telegram-apps/telegram-ui'
+
 import { LuCalendarPlus } from 'react-icons/lu'
+import { Input, Spin } from 'antd'
+
 registerLocale('ru', ru as any)
 
 interface ClientProps {
@@ -292,7 +282,7 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 					specialistId: user.userId,
 					clientId: clientId?.toString(),
 					serviceName: serviceNames,
-					serviceValuta: srvValuta.toString(),
+					serviceValuta: selectedServices[0]?.valuta,
 					serviceIds: selectedServices.map(srv => srv.id),
 					date: date,
 					time: selectedTime,
@@ -459,7 +449,7 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 							<div className='mt-4 p-6 ml-0 mr-0'>
 								<div className='grid grid-cols-2 gap-4 place-items-center text-sm'>
 									{isLoading ? (
-										<Spinner size='m' />
+										<Spin />
 									) : availableTimes.length > 0 ? (
 										availableTimes.map((time, index) => (
 											<button
@@ -489,179 +479,177 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 	if (step === STEPS.INFO) {
 		bodyContent = (
 			<>
-				<AppRoot>
-					<BackButton onClick={onBackStep} />
-					<MainButton text='Далее' onClick={onNext} />
-					<div
-						style={{ background: `var(--tg-theme-section-bg-color)` }}
-						className='flex p-4 items-center mt-2'
-					>
-						<div>
-							<LuCalendarPlus
-								size={32}
-								className='bg-blue-500 p-1 rounded-lg'
-								color='white'
-							/>
+				<BackButton onClick={onBackStep} />
+				<MainButton text='Далее' onClick={onNext} />
+				<div
+					style={{ background: `var(--tg-theme-section-bg-color)` }}
+					className='flex p-4 items-center mt-2'
+				>
+					<div>
+						<LuCalendarPlus
+							size={32}
+							className='bg-blue-500 p-1 rounded-lg'
+							color='white'
+						/>
+					</div>
+					<div className='pl-6'>
+						<div
+							style={{ color: `var(--tg-theme-text-color)` }}
+							className='text-lg font-bold'
+						>
+							Контактная информация
 						</div>
-						<div className='pl-6'>
-							<div
-								style={{ color: `var(--tg-theme-text-color)` }}
-								className='text-lg font-bold'
-							>
-								Контактная информация
-							</div>
-							<div
-								style={{ color: `var(--tg-theme-subtitle-text-color)` }}
-								className='text-sm'
-							>
-								Введите необходимые данные
-							</div>
+						<div
+							style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+							className='text-sm'
+						>
+							Введите необходимые данные
 						</div>
 					</div>
-					<div
-						className='pl-4 pb-4 pr-4 text-lg pt-2'
-						style={{ color: `var(--tg-theme-text-color)` }}
-					>
-						<form style={{ color: `var(--tg-theme-text-color)` }}>
-							<label className='pb-2'>Имя</label>
-							<Input
-								id='firstName'
-								name='firstName'
-								type='text'
-								placeholder='Иван'
-								value={formData.firstName}
-								onChange={handleChange}
-								className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
-								style={{
-									background: `var(--tg-theme-section-bg-color)`,
-									color: `var(--tg-theme-text-color)`,
-								}}
-							/>
-							<label className='pb-2'>Фамилия</label>
-							<Input
-								id='lastName'
-								name='lastName'
-								type='text'
-								placeholder='Иванов'
-								value={formData.lastName}
-								onChange={handleChange}
-								className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
-								style={{
-									background: `var(--tg-theme-section-bg-color)`,
-									color: `var(--tg-theme-text-color)`,
-								}}
-							/>
-							<label className='pb-2'>Телефон</label>
-							<Input
-								id='phone'
-								name='phone'
-								type='tel'
-								placeholder='+79990001111'
-								value={formData.phone}
-								onChange={handleChange}
-								className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500'
-								style={{
-									background: `var(--tg-theme-section-bg-color)`,
-									color: `var(--tg-theme-text-color)`,
-								}}
-							/>
-						</form>
-					</div>
-				</AppRoot>
+				</div>
+				<div
+					className='pl-4 pb-4 pr-4 text-lg pt-2'
+					style={{ color: `var(--tg-theme-text-color)` }}
+				>
+					<form style={{ color: `var(--tg-theme-text-color)` }}>
+						<label className='pb-2'>Имя</label>
+						<Input
+							id='firstName'
+							name='firstName'
+							type='text'
+							placeholder='Иван'
+							value={formData.firstName}
+							onChange={handleChange}
+							className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+							style={{
+								background: `var(--tg-theme-section-bg-color)`,
+								color: `var(--tg-theme-text-color)`,
+							}}
+						/>
+						<label className='pb-2'>Фамилия</label>
+						<Input
+							id='lastName'
+							name='lastName'
+							type='text'
+							placeholder='Иванов'
+							value={formData.lastName}
+							onChange={handleChange}
+							className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+							style={{
+								background: `var(--tg-theme-section-bg-color)`,
+								color: `var(--tg-theme-text-color)`,
+							}}
+						/>
+						<label className='pb-2'>Телефон</label>
+						<Input
+							id='phone'
+							name='phone'
+							type='tel'
+							placeholder='+79990001111'
+							value={formData.phone}
+							onChange={handleChange}
+							className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500'
+							style={{
+								background: `var(--tg-theme-section-bg-color)`,
+								color: `var(--tg-theme-text-color)`,
+							}}
+						/>
+					</form>
+				</div>
 			</>
 		)
 	}
+
 	if (step === STEPS.CONF) {
 		bodyContent = (
 			<>
-				<AppRoot>
-					<BackButton onClick={onBackStep} />
-					<MainButton text='Записать' onClick={handleSubmit} />
-					<ToastContainer />
-					<div
-						style={{ background: `var(--tg-theme-section-bg-color)` }}
-						className='flex p-4 items-center mt-2'
-					>
-						<div>
-							<LuCalendarPlus
-								size={32}
-								className='bg-blue-500 p-1 rounded-lg'
-								color='white'
-							/>
+				<BackButton onClick={onBackStep} />
+				<MainButton text='Записать' onClick={handleSubmit} />
+				<ToastContainer />
+				<div
+					style={{ background: `var(--tg-theme-section-bg-color)` }}
+					className='flex p-4 items-center mt-2'
+				>
+					<div>
+						<LuCalendarPlus
+							size={32}
+							className='bg-blue-500 p-1 rounded-lg'
+							color='white'
+						/>
+					</div>
+					<div className='pl-6'>
+						<div
+							style={{ color: `var(--tg-theme-text-color)` }}
+							className='text-lg font-bold'
+						>
+							Контактная информация
 						</div>
-						<div className='pl-6'>
-							<div
-								style={{ color: `var(--tg-theme-text-color)` }}
-								className='text-lg font-bold'
-							>
-								Контактная информация
-							</div>
-							<div
-								style={{ color: `var(--tg-theme-subtitle-text-color)` }}
-								className='text-sm'
-							>
-								Проверьте данные
-							</div>
+						<div
+							style={{ color: `var(--tg-theme-subtitle-text-color)` }}
+							className='text-sm'
+						>
+							Проверьте данные
 						</div>
 					</div>
-					<div className='flex flex-col mt-4 '>
-						<div className='flex flex-col basis-1/2 p-2 bg-blue-500 text-white justify-center items-center ml-4 mr-4'>
-							<div className='font-extrabold text-2xl'>
-								{newdate} {monthName}
-							</div>
-
-							<div className='font-semibold'>{selectedTime}</div>
+				</div>
+				<div className='flex flex-col mt-4 '>
+					<div className='flex flex-col basis-1/2 p-2 bg-blue-500 text-white justify-center items-center ml-4 mr-4'>
+						<div className='font-extrabold text-2xl'>
+							{newdate} {monthName}
 						</div>
-						<div className='flex flex-col ml-4 mt-4'>
-							<div className='flex items-center mb-2'>
-								<div>
-									<GrUser
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</div>
+
+						<div className='font-semibold'>{selectedTime}</div>
+					</div>
+					<div className='flex flex-col ml-4 mt-4'>
+						<div className='flex items-center mb-2'>
+							<div>
+								<GrUser
+									size={32}
+									className='bg-blue-500 rounded-lg p-1'
+									color='white'
+								/>
+							</div>
+							<span className='pl-4'>
+								Ваше имя: {formData.firstName} {formData.lastName}
+							</span>
+						</div>
+						<div className='flex items-center mb-2'>
+							<div>
+								<MdOutlinePhoneIphone
+									size={32}
+									className='bg-blue-500 rounded-lg p-1'
+									color='white'
+								/>
+							</div>
+							<span className='pl-4'>Ваш номер: {formData.phone}</span>
+						</div>
+						<div className='flex items-center mb-2'>
+							<div>
+								<MdOutlinePhoneIphone
+									size={32}
+									className='bg-blue-500 rounded-lg p-1'
+									color='white'
+								/>
+							</div>
+							<span className='pl-4'>Услуга: {serviceNames}</span>
+						</div>
+						<div className='flex items-center mb-2'>
+							<div>
+								<GrMoney
+									size={32}
+									className='bg-blue-500 rounded-lg p-1'
+									color='white'
+								/>
+							</div>
+							<div>
 								<span className='pl-4'>
-									Ваше имя: {formData.firstName} {formData.lastName}
+									У оплате: {totalPrice.toFixed(0)}{' '}
+									{selectedServices[0]?.valuta}
 								</span>
 							</div>
-							<div className='flex items-center mb-2'>
-								<div>
-									<MdOutlinePhoneIphone
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</div>
-								<span className='pl-4'>Ваш номер: {formData.phone}</span>
-							</div>
-							<div className='flex items-center mb-2'>
-								<div>
-									<MdOutlinePhoneIphone
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</div>
-								<span className='pl-4'>Услуга: {serviceNames}</span>
-							</div>
-							<div className='flex items-center mb-2'>
-								<div>
-									<GrMoney
-										size={32}
-										className='bg-blue-500 rounded-lg p-1'
-										color='white'
-									/>
-								</div>
-								{selectedServices.map(srv => (
-									<span className='pl-4'>
-										К оплате: {totalPrice} {srv.valuta}
-									</span>
-								))}
-							</div>
 						</div>
 					</div>
-				</AppRoot>
+				</div>
 			</>
 		)
 	}
