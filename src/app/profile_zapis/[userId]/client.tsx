@@ -227,7 +227,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 							{service.map((item, index) => (
 								<div className='flex justify-between pt-2' key={index}>
 									<div className=' pl-6 text-start'>{item.name}</div>
-									<div className=' text-blue-500 mr-6'>
+									<div className=' text-blue-500 pr-6 text-end'>
 										{item.price} {item.valuta}
 									</div>
 								</div>
