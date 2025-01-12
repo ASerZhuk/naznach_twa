@@ -223,7 +223,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 				</Cell>
 				<div className='mt-2 mb-4'>
 					{service && service.length > 0 && (
-						<div className='flex flex-col text-right pb-4'>
+						<div className='flex flex-col pb-4'>
 							{service.map((item, index) => (
 								<div className='flex justify-between pt-2' key={index}>
 									<div className=' ml-6 text-start'>{item.name}</div>
