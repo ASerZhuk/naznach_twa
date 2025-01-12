@@ -496,7 +496,7 @@ const Services: React.FC<TimeSlotPickerComponentProps> = ({
 								<option value={'бел. руб.'}>Br</option>
 								<option value={'долл.'}>$</option>
 								<option value={'евро'}>€</option>
-								<option value={'груз. лари'}>₾</option>
+								<option value={'лари'}>₾</option>
 								<option value={'тнг'}>₸</option>
 							</select>
 							<label className='pb-2'>Время на клиента</label>
