@@ -114,13 +114,13 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 
 	// Функция для преобразования числового дня недели в текстовый
 	const dayOfWeekNames = [
+		'Воскресенье',
 		'Понедельник',
 		'Вторник',
 		'Среда',
 		'Четверг',
 		'Пятница',
 		'Суббота',
-		'Воскресенье',
 	]
 
 	const sortedGrafik = grafik
@@ -198,7 +198,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 					График работы
 				</Cell>
 				<div className='mt-2 mb-4'>
-					{grafik && grafik.length > 0 && (
+					{sortedGrafik && sortedGrafik.length > 0 && (
 						<div className='flex flex-col text-right'>
 							{sortedGrafik.map((item, index) => (
 								<div className='flex justify-between pt-2' key={index}>
