@@ -114,14 +114,18 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 
 	// Функция для преобразования числового дня недели в текстовый
 	const dayOfWeekNames = [
-		'Воскресенье',
 		'Понедельник',
 		'Вторник',
 		'Среда',
 		'Четверг',
 		'Пятница',
 		'Суббота',
+		'Воскресенье',
 	]
+
+	const sortedGrafik = grafik
+		? [...grafik].sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+		: []
 
 	const toggleExpanded = () => {
 		setExpanded(!expanded)
@@ -196,7 +200,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 				<div className='mt-2 mb-4'>
 					{grafik && grafik.length > 0 && (
 						<div className='flex flex-col text-right'>
-							{grafik.map((item, index) => (
+							{sortedGrafik.map((item, index) => (
 								<div className='flex justify-between pt-2' key={index}>
 									<div className=' ml-6'>{dayOfWeekNames[item.dayOfWeek]}:</div>
 									<div className=' text-blue-500 mr-6'>
