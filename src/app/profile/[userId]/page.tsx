@@ -18,7 +18,11 @@ const ProfilePage = async ({ params }: ProfilePageProps) => {
 		return <div>Пользователь не найден</div>
 	}
 
-	return <Client user={user} grafik={grafik} service={service} />
+	return (
+		<AppRoot>
+			<Client user={user} grafik={grafik} service={service} />
+		</AppRoot>
+	)
 }
 
 export default ProfilePage

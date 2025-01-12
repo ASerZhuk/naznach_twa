@@ -249,7 +249,11 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 											/>
 										</IconContainer>
 									}
-									after={<div className='text-blue-500'>{app.serviceName}</div>}
+									after={
+										<div className='text-blue-500 break-words text-end'>
+											{app.serviceName}
+										</div>
+									}
 								>
 									Услуга
 								</Cell>

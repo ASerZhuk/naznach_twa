@@ -96,7 +96,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 		tg.MainButton.onClick(() => router.push(`/formSpecialist/${user.userId}`))
 
 		if (user) {
-			const botToken = '7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g' // Замените на токен вашего бота
+			const botToken = '7944780464:AAHZ3r1m_I1x8TFwxqku7xgfIbYyWzmQodY' // Замените на токен вашего бота
 
 			fetch(
 				`https://api.telegram.org/bot${botToken}/getUserProfilePhotos?user_id=${user.userId}`
@@ -141,14 +141,18 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 
 	// Функция для преобразования числового дня недели в текстовый
 	const dayOfWeekNames = [
-		'Воскресенье',
-		'Понедельник',
-		'Вторник',
-		'Среда',
-		'Четверг',
-		'Пятница',
-		'Суббота',
+		'Понедельник', // 0
+		'Вторник', // 1
+		'Среда', // 2
+		'Четверг', // 3
+		'Пятница', // 4
+		'Суббота', // 5
+		'Воскресенье', // 6
 	]
+
+	const sortedGrafik = grafik
+		? [...grafik].sort((a, b) => a.dayOfWeek - b.dayOfWeek)
+		: []
 
 	const info = async () => {
 		const status = document.getElementById('status') as HTMLInputElement
@@ -175,7 +179,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 			}
 		}
 	}
-	const personalLink = `https://t.me/naznach_twa_bot?start=${user.userId}`
+	const personalLink = `https://t.me/testnaznach_bot?start=${user.userId}`
 	const handleCopyLink = async () => {
 		try {
 			await navigator.clipboard.writeText(personalLink)
@@ -293,7 +297,7 @@ const Client = ({ user, grafik, service }: ClientProps) => {
 				<div className='mt-2 mb-4'>
 					{grafik && grafik.length > 0 && (
 						<div className='flex flex-col text-right'>
-							{grafik.map((item, index) => (
+							{sortedGrafik.map((item, index) => (
 								<div className='flex justify-between pt-2' key={index}>
 									<div className=' ml-6'>{dayOfWeekNames[item.dayOfWeek]}:</div>
 									<div className=' text-blue-500 mr-6'>
