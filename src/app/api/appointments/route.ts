@@ -18,7 +18,8 @@ export async function POST(request: Request) {
 			lastName,
 			phone,
 			specialistId,
-			serviceId,
+			serviceIds,
+			serviceValuta,
 			serviceName,
 			date,
 			time,
@@ -28,6 +29,22 @@ export async function POST(request: Request) {
 			specialistPhone,
 			specialistAddress,
 			specialistPrice,
+		}: {
+			firstName: string
+			lastName: string
+			phone: string
+			specialistId: string
+			serviceValuta: string
+			serviceIds: number[]
+			serviceName: string
+			date: string
+			time: string
+			clientId: string
+			specialistName: string
+			specialistLastName: string
+			specialistPhone: string
+			specialistAddress: string
+			specialistPrice: string
 		} = body
 
 		// Вставка данных в базу данных
@@ -38,6 +55,7 @@ export async function POST(request: Request) {
 				phone,
 				specialistId,
 				serviceName,
+				serviceValuta,
 				date,
 				time,
 				clientId,
@@ -46,6 +64,13 @@ export async function POST(request: Request) {
 				specialistPhone,
 				specialistAddress,
 				specialistPrice,
+				services: {
+					create: serviceIds.map(serviceId => ({
+						service: {
+							connect: { id: serviceId },
+						},
+					})),
+				},
 			},
 		})
 

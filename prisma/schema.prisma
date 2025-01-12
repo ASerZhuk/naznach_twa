@@ -79,6 +79,7 @@ model Appointments {
   lastName          String
   specialistId      String
   serviceName       String?
+  serviceValuta     String?
   date              String
   time              String
   phone             String
