@@ -53,6 +53,7 @@ interface MySpecialBookingProps {
 				date: string
 				time: string
 				serviceName: string | null
+				serviceValuta: string | null
 				phone: string
 				specialistName: string | null
 				specialistLastName: string | null
@@ -303,7 +304,7 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 								}
 								after={
 									<div className='text-blue-500'>
-										{app.specialistPrice} руб.
+										{app.specialistPrice} {app.serviceValuta}
 									</div>
 								}
 							>
