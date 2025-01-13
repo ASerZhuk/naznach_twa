@@ -670,7 +670,7 @@ const SpecZapis = ({ user, service, grafik }: SpecZapisProps) => {
 		)
 	}
 
-	const message = `Вы записаны на ${date} в ${selectedTime} к мастеру ${user.firstName} ${user.lastName} к оплате ${totalPrice} руб.\nТелефон для связи ${user.phone}\n\nУведомление из приложения:\nhttps://t.me/naznach_twa_bot`
+	const message = `Вы записаны на ${date} в ${selectedTime} к мастеру ${user.firstName} ${user.lastName} к оплате ${totalPrice}${selectedServices[0]?.valuta},\nТелефон для связи ${user.phone}\n\nУведомление из приложения:\nhttps://t.me/naznach_twa_bot`
 	const encodedMessage = encodeURIComponent(message)
 
 	if (step === STEPS.NOT) {
