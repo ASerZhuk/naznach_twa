@@ -300,7 +300,6 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 
 			const data = await response.json()
 
-			setStep(value => value + 1)
 			toast.success('Запись прошла успешно')
 		} catch (error) {
 			console.error('Ошибка при создании записи:', error)
@@ -564,7 +563,7 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 		bodyContent = (
 			<>
 				<BackButton onClick={onBackStep} />
-				<MainButton text='Записать' onClick={handleSubmit} />
+				<MainButton text='Записаться' onClick={handleSubmit} />
 				<ToastContainer />
 				<div
 					style={{ background: `var(--tg-theme-section-bg-color)` }}
