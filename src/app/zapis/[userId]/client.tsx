@@ -293,7 +293,7 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 					specialistPrice: totalPrice.toString(),
 				}),
 			})
-
+			router.push('/')
 			if (!response.ok) {
 				throw new Error('Ошибка при создании записи')
 			}
@@ -301,6 +301,9 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 			const data = await response.json()
 
 			toast.success('Запись прошла успешно')
+			setTimeout(() => {
+				router.push('/')
+			}, 1000)
 		} catch (error) {
 			console.error('Ошибка при создании записи:', error)
 		}
