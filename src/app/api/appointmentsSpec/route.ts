@@ -56,7 +56,7 @@ export async function POST(request: Request) {
 		const photoSuccess = `${webAppUrl}/44.png`
 
 		await bot.sendPhoto(clientChatId, photoSuccess, {
-			caption: `🔔 Вы записались 🔔\n\n 📆 Дата: ${date} \n ⌚ Время: ${time} \n 💰 К оплате: ${specialistPrice} руб. \n 😀 Мастер: ${specialistName} ${specialistLastName} \n 📞 Телефон: ${specialistPhone}`,
+			caption: `🔔 Вы записались 🔔\n\n 📆 Дата: ${date} \n ⌚ Время: ${time} \n 💰 К оплате: ${specialistPrice} ${serviceValuta} \n 😀 Мастер: ${specialistName} ${specialistLastName} \n 📞 Телефон: ${specialistPhone}`,
 			reply_markup: {
 				inline_keyboard: [
 					[{ text: 'Перейти в приложение', web_app: { url: `${webAppUrl}` } }],
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 		})
 
 		await bot.sendPhoto(masterChatId, photoSuccess, {
-			caption: `🔔 У Вас новая запись 🔔\n\n 😀 ${firstName} ${lastName} \n 📆 Дата: ${date} \n ⌚ Время: ${time} \n 📞 Телефон: ${phone} \n 💰 К оплате: ${specialistPrice} руб.`,
+			caption: `🔔 У Вас новая запись 🔔\n\n 😀 ${firstName} ${lastName} \n 📆 Дата: ${date} \n ⌚ Время: ${time} \n 📞 Телефон: ${phone} \n 💰 К оплате: ${specialistPrice} ${serviceValuta}`,
 			reply_markup: {
 				inline_keyboard: [
 					[{ text: 'Перейти в приложение', web_app: { url: `${webAppUrl}` } }],
