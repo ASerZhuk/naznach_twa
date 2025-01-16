@@ -270,7 +270,7 @@ const Zapis = ({ user, grafik, service }: ClientProps) => {
 
 	const handleSubmit = async () => {
 		try {
-			const response = await fetch('/api/appointmentsSpec', {
+			const response = await fetch('/api/appointments', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
