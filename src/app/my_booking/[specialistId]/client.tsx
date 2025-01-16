@@ -1,7 +1,7 @@
 'use client'
 
 import useTelegramUserProfile from '@/app/hooks/useTelegramUserProfile'
-import { Avatar, Image, DatePicker, Select } from 'antd'
+import { Avatar, Image, DatePicker, Select, Input } from 'antd'
 import locale from 'antd/es/date-picker/locale/ru_RU'
 import dayjs, { Dayjs } from 'dayjs'
 import { useRouter } from 'next/navigation'
@@ -17,6 +17,7 @@ import {
 	MdMoreTime,
 	MdOutlinePhoneIphone,
 	MdChecklist,
+	MdArrowForwardIos,
 } from 'react-icons/md'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -30,7 +31,6 @@ import {
 	Cell,
 	Headline,
 	IconContainer,
-	Input,
 	List,
 	Modal,
 	Placeholder,
@@ -38,7 +38,7 @@ import {
 } from '@telegram-apps/telegram-ui'
 import { LuCalendarPlus } from 'react-icons/lu'
 import { CiCalendarDate } from 'react-icons/ci'
-import { GrMoney, GrUser } from 'react-icons/gr'
+import { GrMoney, GrPhone, GrUser } from 'react-icons/gr'
 import { ModalClose } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalClose/ModalClose'
 import { ModalHeader } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalHeader/ModalHeader'
 import { Icon28Dismiss } from '@vkontakte/icons'
@@ -92,6 +92,7 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 	const servicesList = Array.from(
 		new Set(clientAppointments.map(app => app.serviceName))
 	)
+	const [filter, setFilter] = useState('all')
 
 	useEffect(() => {
 		const tg = window.Telegram.WebApp
@@ -183,6 +184,321 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 	const messageData = `Ваша запись на ${message.date} в ${message.time} к мастеру ${message.specialistName} ${message.specialistLastName} отменена. Причина: ${cancelReason}. Телефон для связи: ${message.specialistPhone}. Уведомление из приложения: https://t.me/naznach_twa_bot`
 	const encodedMessage = encodeURIComponent(messageData)
 
+	const groupedAppointments = filteredAppointments.reduce((acc, app) => {
+		const date = app.date
+
+		// Разделяем дату на день и месяц
+		const [day, month] = date.split('.')
+
+		if (!acc[date]) {
+			acc[date] = []
+		}
+		acc[date].push(app)
+		return acc
+	}, {} as { [key: string]: typeof filteredAppointments })
+
+	const months = [
+		'января',
+		'февраля',
+		'марта',
+		'апреля',
+		'мая',
+		'июня',
+		'июля',
+		'августа',
+		'сентября',
+		'октября',
+		'ноября',
+		'декабря',
+	]
+
+	// Рендерим записи с датами в читаемом формате
+	const renderAppointments = Object.keys(groupedAppointments).map(date => {
+		const [day, month] = date.split('.') // Разделяем дату на день и месяц
+		const monthName = months[parseInt(month, 10) - 1] // Преобразуем номер месяца в название
+
+		return (
+			<div
+				key={date}
+				style={{ backgroundColor: `var(--tg-theme-section-bg-color)` }}
+				className='mt-4 pb-4'
+			>
+				<div className='pt-4 pl-4 text-xl font-semibold'>
+					{`${day} ${monthName}`} {/* Выводим день и месяц */}
+				</div>
+				{groupedAppointments[date].map(app => {
+					// Извлекаем время начала и конца из строки вида "12:00 - 16:45"
+					const [startTime, endTime] = app.time.split(' - ')
+
+					// Функция для преобразования строки "19.01.2025 12:00" в объект Date
+					const convertToDate = (dateString: string, timeString: string) => {
+						const [day, month, year] = dateString.split('.').map(Number)
+						const [hours, minutes] = timeString.split(':').map(Number)
+						const date = new Date(year, month - 1, day, hours, minutes, 0, 0) // month - 1, так как месяц в JavaScript начинается с 0
+						return date
+					}
+
+					// Сначала преобразуем дату и время в Date объекты для начала и конца
+					const startDate = convertToDate(date, startTime)
+					const endDate = convertToDate(date, endTime)
+
+					// Получаем текущее время
+					const now = new Date()
+
+					// Проверка, если текущее время больше или равно конечному времени, то запись устарела
+					const isPastAppointment = now > endDate
+
+					return (
+						<Modal
+							header={<ModalHeader></ModalHeader>}
+							trigger={
+								<div key={app.id} className='pt-4'>
+									<div>
+										<div
+											className={`rounded-lg ml-4 mr-4 pt-2 pb-2 border-l-4 flex items-center justify-between ${
+												isPastAppointment
+													? 'border-red-500'
+													: 'border-green-500'
+											}`}
+											style={{
+												backgroundColor: `var(--tg-theme-secondary-bg-color)`,
+											}}
+										>
+											<div>
+												<div className='pl-4 font-bold text-blue-500'>
+													{app.time}
+												</div>
+												<div className='pl-4 text-sm font-bold'>
+													{app.firstName} {app.lastName}
+												</div>
+												<div className='pl-4 w-95 text-xs break-words'>
+													{app.serviceName}
+												</div>
+												<div className='pl-4 text-sm text-blue-500'>
+													{app.specialistPrice} {app.serviceValuta}
+												</div>
+											</div>
+											<div className='pr-4'>
+												<MdArrowForwardIos />
+											</div>
+										</div>
+									</div>
+								</div>
+							}
+						>
+							<div key={app.id}>
+								<div className='flex items-center justify-between mb-4 mt-4'>
+									<div className='flex items-center pl-4'>
+										<CiCalendarDate
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+										<span className='pl-4'>Дата записи</span>
+									</div>
+									<div className='text-blue-500 pr-4'>{app.date}</div>
+								</div>
+								<div className='flex items-center justify-between mb-4 mt-4'>
+									<div className='flex items-center pl-4'>
+										<MdMoreTime
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+										<span className='pl-4'>Время записи</span>
+									</div>
+									<div className='text-blue-500 pr-4'>{app.time}</div>
+								</div>
+								<div className='flex items-center justify-between mb-4 mt-4'>
+									<div className='flex items-center pl-4'>
+										<MdChecklist
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+										<span className='pl-4'>Услуга</span>
+									</div>
+									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
+										{app.serviceName}
+									</div>
+								</div>
+								<div className='flex items-center justify-between mb-4 mt-4'>
+									<div className='flex items-center pl-4'>
+										<GrMoney
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+										<span className='pl-4'>К оплате</span>
+									</div>
+									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
+										{app.specialistPrice} {app.serviceValuta}
+									</div>
+								</div>
+								<div className='flex items-center justify-between mb-4 mt-4'>
+									<div className='flex items-center pl-4'>
+										<GrUser
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+										<span className='pl-4'>Имя клиента</span>
+									</div>
+									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
+										{app.firstName} {app.lastName}
+									</div>
+								</div>
+
+								<div className='flex items-center justify-between mb-4 mt-4'>
+									<div className='flex items-center pl-4'>
+										<MdOutlinePhoneIphone
+											size={32}
+											className='bg-blue-500 rounded-lg p-1'
+											color='white'
+										/>
+										<span className='pl-4'>Телефон</span>
+									</div>
+									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
+										{app.phone}
+									</div>
+								</div>
+								<div className='flex justify-evenly mb-4'>
+									<button
+										onClick={() => router.push(`/perezapis/${app.id}`)}
+										className='bg-green-500 rounded-full px-5 py-3 text-white text-sm'
+									>
+										<div className='flex items-center'>
+											<FaRegEdit className='mr-2' />
+											Перезаписать
+										</div>
+									</button>
+								</div>
+							</div>
+							<Modal
+								header={<ModalHeader></ModalHeader>}
+								trigger={
+									<div className='flex justify-center'>
+										<button
+											onClick={() =>
+												openCancelModal(
+													app.id,
+													app.clientId,
+													app.specialistId,
+													app.date,
+													app.time,
+													app.specialistName,
+													app.specialistLastName,
+													app.specialistPhone
+												)
+											}
+											className='bg-red-500 rounded-full px-9 py-3 mb-4  text-white text-sm'
+										>
+											<div className='flex items-center'>
+												<MdOutlineCancel className='mr-2' />
+												Отменить
+											</div>
+										</button>
+									</div>
+								}
+							>
+								{app.clientId === app.specialistId ? (
+									<div className='flex flex-col ml-4 mr-4'>
+										<label className='pb-2'>Причина отмены</label>
+										<Input
+											value={cancelReason}
+											onChange={e => setCancelReason(e.target.value)}
+											placeholder='Сегодня не работаю'
+											className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+											style={{
+												background: `var(--tg-theme-section-bg-color)`,
+												color: `var(--tg-theme-text-color)`,
+											}}
+										/>
+
+										<div>
+											<Blockquote className='flex flex-col' type='text'>
+												<div>Автоматическое сообщение клиенту:</div>
+												<div className='mt-2'>
+													Ваша запись на {app.date} в {app.time} к мастеру{' '}
+													{app.specialistName} {app.specialistLastName}{' '}
+													отменена. Причина: {cancelReason}. Телефон для связи:{' '}
+													{app.specialistPhone}. Уведомление из приложения:{' '}
+													<a href='https://t.me/naznach_twa_bot'>
+														https://t.me/naznach_twa_bot
+													</a>
+												</div>
+											</Blockquote>
+										</div>
+
+										<div onClick={handleCancel} className='flex mt-4 mb-3 ml-6'>
+											<FaTelegramPlane size={24} color='#3b82f6' />
+											<a
+												href={`https://t.me/${
+													app.phone
+												}?text=${encodeURIComponent(messageData)}`}
+											>
+												<span className='text-blue-500 ml-4'>
+													Отменить и отправить клиенту в Telegram
+												</span>
+											</a>
+										</div>
+
+										<div
+											className='flex mt-4 mb-3 ml-6'
+											onClick={() => {
+												handleCancel()
+												window.open(
+													`https://wa.me/${app.phone}?text=${encodedMessage}`
+												)
+											}}
+										>
+											<FaWhatsapp size={24} color='green' />
+											<span className='text-green-500 ml-4'>
+												Отменить и отправить клиенту в WhatsApp
+											</span>
+										</div>
+
+										<Button
+											className=' ml-4 mr-4 mb-8'
+											size='m'
+											onClick={handleCancel}
+										>
+											Отменить без уведомления клиенту
+										</Button>
+									</div>
+								) : (
+									<div className='flex flex-col ml-4 mr-4'>
+										<label className='pb-2'>Причина отмены</label>
+										<Input
+											value={cancelReason}
+											onChange={e => setCancelReason(e.target.value)}
+											placeholder='Сегодня не работаю'
+											className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+											style={{
+												background: `var(--tg-theme-section-bg-color)`,
+												color: `var(--tg-theme-text-color)`,
+											}}
+										/>
+
+										<ModalClose>
+											<Button
+												className=' ml-4 mr-4 mb-8'
+												size='m'
+												onClick={handleCancel}
+											>
+												Подтвердить
+											</Button>
+										</ModalClose>
+									</div>
+								)}
+							</Modal>
+						</Modal>
+					)
+				})}
+			</div>
+		)
+	})
+
 	return (
 		<>
 			<ToastContainer />
@@ -232,298 +548,19 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 								</Select.Option>
 							))}
 						</Select>
+						<div className='flex items-center justify-evenly mt-4 '>
+							<div className='border-l-4 pl-2 border-green-500 text-xs'>
+								Не завершенная запись
+							</div>
+							<div className='border-l-4 pl-2 border-red-500 text-xs'>
+								Завершенная запись
+							</div>
+						</div>
 					</div>
 				</Section>
 
 				<List>
-					{filteredAppointments && filteredAppointments.length > 0 ? (
-						filteredAppointments.map(app => (
-							<>
-								<Section key={app.id} className='mt-4'>
-									{app.clientId === app.specialistId && (
-										<div className=' pr-2 pt-2 pb-2 flex justify-end items-center'>
-											<div className='pr-2 text-red-500 text-xs'>
-												Запись сделана вами
-											</div>
-											<FaUserAltSlash
-												size={24}
-												className='bg-red-500 rounded-lg p-1'
-												color='white'
-											/>
-										</div>
-									)}
-									<div className='flex items-center justify-between mb-4 mt-4'>
-										<div className='flex items-center pl-4'>
-											<CiCalendarDate
-												size={32}
-												className='bg-blue-500 rounded-lg p-1'
-												color='white'
-											/>
-											<span className='pl-4'>Дата записи</span>
-										</div>
-										<div className='text-blue-500 pr-4'>{app.date}</div>
-									</div>
-
-									<div className='flex items-center justify-between mb-4 mt-4'>
-										<div className='flex items-center pl-4'>
-											<MdMoreTime
-												size={32}
-												className='bg-blue-500 rounded-lg p-1'
-												color='white'
-											/>
-											<span className='pl-4'>Время записи</span>
-										</div>
-										<div className='text-blue-500 pr-4'>{app.time}</div>
-									</div>
-
-									<div className='flex items-center justify-between mb-4 mt-4'>
-										<div className='flex items-center pl-4'>
-											<MdChecklist
-												size={32}
-												className='bg-blue-500 rounded-lg p-1'
-												color='white'
-											/>
-											<span className='pl-4'>Услуга</span>
-										</div>
-										<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-											{app.serviceName}
-										</div>
-									</div>
-
-									<div className='flex items-center justify-between mb-4 mt-4'>
-										<div className='flex items-center pl-4'>
-											<GrMoney
-												size={32}
-												className='bg-blue-500 rounded-lg p-1'
-												color='white'
-											/>
-											<span className='pl-4'>К оплате</span>
-										</div>
-										<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-											{app.specialistPrice} {app.serviceValuta}
-										</div>
-									</div>
-
-									<div className='flex items-center justify-between mb-4 mt-4'>
-										<div className='flex items-center pl-4'>
-											<GrUser
-												size={32}
-												className='bg-blue-500 rounded-lg p-1'
-												color='white'
-											/>
-											<span className='pl-4'>Имя клиента</span>
-										</div>
-										<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-											{app.firstName} {app.lastName}
-										</div>
-									</div>
-
-									<div className='flex items-center justify-between mb-4 mt-4'>
-										<div className='flex items-center pl-4'>
-											<MdOutlinePhoneIphone
-												size={32}
-												className='bg-blue-500 rounded-lg p-1'
-												color='white'
-											/>
-											<span className='pl-4'>Телефон</span>
-										</div>
-										<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-											{app.phone}
-										</div>
-									</div>
-
-									<div className='flex flex-row p-4 justify-between'>
-										<div className='text-center pt-2'>
-											<button
-												onClick={() => router.push(`/perezapis/${app.id}`)}
-												className='bg-blue-500 rounded-full px-5 py-3  text-white text-sm'
-											>
-												<div className='flex items-center'>
-													<FaRegEdit className='mr-2' />
-													Перезаписать
-												</div>
-											</button>
-										</div>
-										{!writeSpec ? (
-											<Modal
-												header={
-													<ModalHeader
-														after={
-															<ModalClose>
-																<Icon28Dismiss
-																	style={{
-																		color: 'var(--tgui--plain_foreground)',
-																	}}
-																/>
-															</ModalClose>
-														}
-													></ModalHeader>
-												}
-												trigger={
-													<div className='text-center pt-2'>
-														<button
-															onClick={() =>
-																openCancelModal(
-																	app.id,
-																	app.clientId,
-																	app.specialistId,
-																	app.date,
-																	app.time,
-																	app.specialistName,
-																	app.specialistLastName,
-																	app.specialistPhone
-																)
-															}
-															className='bg-red-500 rounded-full px-9 py-3  text-white text-sm'
-														>
-															<div className='flex items-center'>
-																<MdOutlineCancel className='mr-2' />
-																Отменить
-															</div>
-														</button>
-													</div>
-												}
-											>
-												<div className='flex flex-col justify-center'>
-													<Input
-														header='Причина отмены'
-														value={cancelReason}
-														onChange={e => setCancelReason(e.target.value)}
-														placeholder='Сегодня не работаю'
-														status='focused'
-													/>
-
-													<Button
-														className=' ml-4 mr-4 mb-8'
-														size='m'
-														onClick={handleCancel}
-													>
-														Подтвердить
-													</Button>
-												</div>
-											</Modal>
-										) : (
-											<Modal
-												header={
-													<ModalHeader
-														after={
-															<ModalClose>
-																<Icon28Dismiss
-																	style={{
-																		color: 'var(--tgui--plain_foreground)',
-																	}}
-																/>
-															</ModalClose>
-														}
-													></ModalHeader>
-												}
-												trigger={
-													<div className='text-center pt-2'>
-														<button
-															onClick={() =>
-																openCancelModal(
-																	app.id,
-																	app.clientId,
-																	app.specialistId,
-																	app.date,
-																	app.time,
-																	app.specialistName,
-																	app.specialistLastName,
-																	app.specialistPhone
-																)
-															}
-															className='bg-red-500 rounded-full px-9 py-3  text-white text-sm'
-														>
-															<div className='flex items-center'>
-																<MdOutlineCancel className='mr-2' />
-																Отменить
-															</div>
-														</button>
-													</div>
-												}
-											>
-												<div className='flex flex-col justify-center'>
-													<Input
-														header='Причина отмены'
-														value={cancelReason}
-														onChange={e => setCancelReason(e.target.value)}
-														placeholder='Сегодня не работаю'
-														status='focused'
-													/>
-
-													<div>
-														<Blockquote className='flex flex-col' type='text'>
-															<div>Автоматическое сообщение клиенту:</div>
-															<div className='mt-2'>
-																Ваша запись на {app.date} в {app.time} к мастеру{' '}
-																{app.specialistName} {app.specialistLastName}{' '}
-																отменена. Причина: {cancelReason}. Телефон для
-																связи: {app.specialistPhone}. Уведомление из
-																приложения:{' '}
-																<a href='https://t.me/naznach_twa_bot'>
-																	https://t.me/naznach_twa_bot
-																</a>
-															</div>
-														</Blockquote>
-													</div>
-
-													<div
-														onClick={handleCancel}
-														className='flex mt-4 mb-3 ml-6'
-													>
-														<FaTelegramPlane size={24} color='#3b82f6' />
-														<a
-															href={`https://t.me/${
-																app.phone
-															}?text=${encodeURIComponent(messageData)}`}
-														>
-															<span className='text-blue-500 ml-4'>
-																Отменить и отправить клиенту в Telegram
-															</span>
-														</a>
-													</div>
-
-													<div
-														className='flex mt-4 mb-3 ml-6'
-														onClick={() => {
-															handleCancel()
-															window.open(
-																`https://wa.me/${app.phone}?text=${encodedMessage}`
-															)
-														}}
-													>
-														<FaWhatsapp size={24} color='green' />
-														<span className='text-green-500 ml-4'>
-															Отменить и отправить клиенту в WhatsApp
-														</span>
-													</div>
-
-													<Button
-														className=' ml-4 mr-4 mb-8'
-														size='m'
-														onClick={handleCancel}
-													>
-														Отменить без уведомления клиенту
-													</Button>
-												</div>
-											</Modal>
-										)}
-									</div>
-								</Section>
-							</>
-						))
-					) : (
-						<div className='HIJtihMA8FHczS02iWF5'>
-							<Placeholder header='Записей нет'>
-								<img
-									alt='Telegram sticker'
-									className='blt0jZBzpxuR4oDhJc8s'
-									src='https://media.giphy.com/media/TqGcOed29VJdjkNyy6/giphy.gif'
-									width='50%'
-								/>
-							</Placeholder>
-						</div>
-					)}
+					<div>{renderAppointments}</div>
 				</List>
 			</AppRoot>
 		</>
