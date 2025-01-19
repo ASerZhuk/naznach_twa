@@ -18,6 +18,7 @@ import {
 	MdOutlinePhoneIphone,
 	MdChecklist,
 	MdArrowForwardIos,
+	MdDeleteForever,
 } from 'react-icons/md'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -249,250 +250,173 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 					const isPastAppointment = now > endDate
 
 					return (
-						<Modal
-							header={<ModalHeader></ModalHeader>}
-							trigger={
-								<div key={app.id} className='pt-4'>
-									<div>
-										<div
-											className={`rounded-lg ml-4 mr-4 pt-2 pb-2 border-l-4 flex items-center justify-between ${
-												isPastAppointment
-													? 'border-red-500'
-													: 'border-green-500'
-											}`}
-											style={{
-												backgroundColor: `var(--tg-theme-secondary-bg-color)`,
-											}}
-										>
-											<div>
-												<div className='pl-4 font-bold text-blue-500'>
-													{app.time}
-												</div>
-												<div className='pl-4 text-sm font-bold'>
-													{app.firstName} {app.lastName}
-												</div>
-												<div className='pl-4 w-95 text-xs break-words'>
-													{app.serviceName}
-												</div>
-												<div className='pl-4 text-sm text-blue-500'>
-													{app.specialistPrice} {app.serviceValuta}
-												</div>
-											</div>
-											<div className='pr-4'>
-												<MdArrowForwardIos />
-											</div>
-										</div>
-									</div>
-								</div>
-							}
-						>
-							<div key={app.id}>
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<CiCalendarDate
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>Дата записи</span>
-									</div>
-									<div className='text-blue-500 pr-4'>{app.date}</div>
-								</div>
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<MdMoreTime
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>Время записи</span>
-									</div>
-									<div className='text-blue-500 pr-4'>{app.time}</div>
-								</div>
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<MdChecklist
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>Услуга</span>
-									</div>
-									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-										{app.serviceName}
-									</div>
-								</div>
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<GrMoney
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>К оплате</span>
-									</div>
-									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-										{app.specialistPrice} {app.serviceValuta}
-									</div>
-								</div>
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<GrUser
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>Имя клиента</span>
-									</div>
-									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-										{app.firstName} {app.lastName}
-									</div>
-								</div>
-
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<MdOutlinePhoneIphone
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>Телефон</span>
-									</div>
-									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-										{app.phone}
-									</div>
-								</div>
-								<div className='flex justify-evenly mb-4'>
-									<button
-										onClick={() => router.push(`/perezapis/${app.id}`)}
-										className='bg-green-500 rounded-full px-5 py-3 text-white text-sm'
+						<>
+							<div key={app.id} className='pt-4'>
+								<div>
+									<div
+										className={`rounded-lg ml-4 mr-4 pt-2 pb-2 border-l-4 flex items-center justify-between ${
+											isPastAppointment ? 'border-red-500' : 'border-green-500'
+										}`}
+										style={{
+											backgroundColor: `var(--tg-theme-secondary-bg-color)`,
+										}}
 									>
-										<div className='flex items-center'>
-											<FaRegEdit className='mr-2' />
-											Перезаписать
+										<div>
+											<div className='pl-4 font-bold text-blue-500'>
+												{app.time}
+											</div>
+											<div className='pl-4 text-sm font-bold'>
+												{app.firstName} {app.lastName}
+											</div>
+											<div className='pl-4 text-xs font-normal text-blue-500'>
+												{app.phone}
+											</div>
+											<div className='pl-4 w-95 text-xs break-words'>
+												{app.serviceName}
+											</div>
+											<div className='pl-4 text-sm text-blue-500'>
+												{app.specialistPrice} {app.serviceValuta}
+											</div>
 										</div>
-									</button>
+										<div className='pr-4'>
+											<div>
+												<FaRegEdit
+													size={32}
+													className='bg-green-500 p-1 rounded-lg mb-2'
+													color='white'
+													onClick={() => router.push(`/perezapis/${app.id}`)}
+												/>
+											</div>
+											<Modal
+												header={<ModalHeader></ModalHeader>}
+												trigger={
+													<div className='flex justify-center'>
+														<button
+															onClick={() =>
+																openCancelModal(
+																	app.id,
+																	app.clientId,
+																	app.specialistId,
+																	app.date,
+																	app.time,
+																	app.specialistName,
+																	app.specialistLastName,
+																	app.specialistPhone
+																)
+															}
+														>
+															<div className='flex items-center'>
+																<MdDeleteForever
+																	size={32}
+																	className='bg-red-500 p-1 rounded-lg'
+																	color='white'
+																/>
+															</div>
+														</button>
+													</div>
+												}
+											>
+												{app.clientId === app.specialistId ? (
+													<div className='flex flex-col ml-4 mr-4'>
+														<label className='pb-2'>Причина отмены</label>
+														<Input
+															value={cancelReason}
+															onChange={e => setCancelReason(e.target.value)}
+															placeholder='Сегодня не работаю'
+															className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+															style={{
+																background: `var(--tg-theme-section-bg-color)`,
+																color: `var(--tg-theme-text-color)`,
+															}}
+														/>
+
+														<div>
+															<Blockquote className='flex flex-col' type='text'>
+																<div>Автоматическое сообщение клиенту:</div>
+																<div className='mt-2'>
+																	Ваша запись на {app.date} в {app.time} к
+																	мастеру {app.specialistName}{' '}
+																	{app.specialistLastName} отменена. Причина:{' '}
+																	{cancelReason}. Телефон для связи:{' '}
+																	{app.specialistPhone}. Уведомление из
+																	приложения:{' '}
+																	<a href='https://t.me/naznach_twa_bot'>
+																		https://t.me/naznach_twa_bot
+																	</a>
+																</div>
+															</Blockquote>
+														</div>
+
+														<div
+															onClick={handleCancel}
+															className='flex mt-4 mb-3 ml-6'
+														>
+															<FaTelegramPlane size={24} color='#3b82f6' />
+															<a
+																href={`https://t.me/${
+																	app.phone
+																}?text=${encodeURIComponent(messageData)}`}
+															>
+																<span className='text-blue-500 ml-4'>
+																	Отменить и отправить клиенту в Telegram
+																</span>
+															</a>
+														</div>
+
+														<div
+															className='flex mt-4 mb-3 ml-6'
+															onClick={() => {
+																handleCancel()
+																window.open(
+																	`https://wa.me/${app.phone}?text=${encodedMessage}`
+																)
+															}}
+														>
+															<FaWhatsapp size={24} color='green' />
+															<span className='text-green-500 ml-4'>
+																Отменить и отправить клиенту в WhatsApp
+															</span>
+														</div>
+
+														<Button
+															className=' ml-4 mr-4 mb-8'
+															size='m'
+															onClick={handleCancel}
+														>
+															Отменить без уведомления клиенту
+														</Button>
+													</div>
+												) : (
+													<div className='flex flex-col ml-4 mr-4'>
+														<label className='pb-2'>Причина отмены</label>
+														<Input
+															value={cancelReason}
+															onChange={e => setCancelReason(e.target.value)}
+															placeholder='Сегодня не работаю'
+															className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+															style={{
+																background: `var(--tg-theme-section-bg-color)`,
+																color: `var(--tg-theme-text-color)`,
+															}}
+														/>
+
+														<ModalClose>
+															<Button
+																className=' ml-4 mr-4 mb-8'
+																size='m'
+																onClick={handleCancel}
+															>
+																Подтвердить
+															</Button>
+														</ModalClose>
+													</div>
+												)}
+											</Modal>
+										</div>
+									</div>
 								</div>
 							</div>
-							<Modal
-								header={<ModalHeader></ModalHeader>}
-								trigger={
-									<div className='flex justify-center'>
-										<button
-											onClick={() =>
-												openCancelModal(
-													app.id,
-													app.clientId,
-													app.specialistId,
-													app.date,
-													app.time,
-													app.specialistName,
-													app.specialistLastName,
-													app.specialistPhone
-												)
-											}
-											className='bg-red-500 rounded-full px-9 py-3 mb-4  text-white text-sm'
-										>
-											<div className='flex items-center'>
-												<MdOutlineCancel className='mr-2' />
-												Отменить
-											</div>
-										</button>
-									</div>
-								}
-							>
-								{app.clientId === app.specialistId ? (
-									<div className='flex flex-col ml-4 mr-4'>
-										<label className='pb-2'>Причина отмены</label>
-										<Input
-											value={cancelReason}
-											onChange={e => setCancelReason(e.target.value)}
-											placeholder='Сегодня не работаю'
-											className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
-											style={{
-												background: `var(--tg-theme-section-bg-color)`,
-												color: `var(--tg-theme-text-color)`,
-											}}
-										/>
-
-										<div>
-											<Blockquote className='flex flex-col' type='text'>
-												<div>Автоматическое сообщение клиенту:</div>
-												<div className='mt-2'>
-													Ваша запись на {app.date} в {app.time} к мастеру{' '}
-													{app.specialistName} {app.specialistLastName}{' '}
-													отменена. Причина: {cancelReason}. Телефон для связи:{' '}
-													{app.specialistPhone}. Уведомление из приложения:{' '}
-													<a href='https://t.me/naznach_twa_bot'>
-														https://t.me/naznach_twa_bot
-													</a>
-												</div>
-											</Blockquote>
-										</div>
-
-										<div onClick={handleCancel} className='flex mt-4 mb-3 ml-6'>
-											<FaTelegramPlane size={24} color='#3b82f6' />
-											<a
-												href={`https://t.me/${
-													app.phone
-												}?text=${encodeURIComponent(messageData)}`}
-											>
-												<span className='text-blue-500 ml-4'>
-													Отменить и отправить клиенту в Telegram
-												</span>
-											</a>
-										</div>
-
-										<div
-											className='flex mt-4 mb-3 ml-6'
-											onClick={() => {
-												handleCancel()
-												window.open(
-													`https://wa.me/${app.phone}?text=${encodedMessage}`
-												)
-											}}
-										>
-											<FaWhatsapp size={24} color='green' />
-											<span className='text-green-500 ml-4'>
-												Отменить и отправить клиенту в WhatsApp
-											</span>
-										</div>
-
-										<Button
-											className=' ml-4 mr-4 mb-8'
-											size='m'
-											onClick={handleCancel}
-										>
-											Отменить без уведомления клиенту
-										</Button>
-									</div>
-								) : (
-									<div className='flex flex-col ml-4 mr-4'>
-										<label className='pb-2'>Причина отмены</label>
-										<Input
-											value={cancelReason}
-											onChange={e => setCancelReason(e.target.value)}
-											placeholder='Сегодня не работаю'
-											className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
-											style={{
-												background: `var(--tg-theme-section-bg-color)`,
-												color: `var(--tg-theme-text-color)`,
-											}}
-										/>
-
-										<ModalClose>
-											<Button
-												className=' ml-4 mr-4 mb-8'
-												size='m'
-												onClick={handleCancel}
-											>
-												Подтвердить
-											</Button>
-										</ModalClose>
-									</div>
-								)}
-							</Modal>
-						</Modal>
+						</>
 					)
 				})}
 			</div>
