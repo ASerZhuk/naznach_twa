@@ -32,6 +32,7 @@ import {
 	MdOutlinePhoneIphone,
 	MdArrowForwardIos,
 	MdChecklist,
+	MdDeleteForever,
 } from 'react-icons/md'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -207,172 +208,89 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 					const isPastAppointment = now > endDate
 
 					return (
-						<Modal
-							header={<ModalHeader></ModalHeader>}
-							trigger={
-								<div key={app.id} className='pt-4'>
-									<div>
-										<div
-											className={`rounded-lg ml-4 mr-4 pt-2 pb-2 border-l-4 flex items-center justify-between ${
-												isPastAppointment
-													? 'border-red-500'
-													: 'border-green-500'
-											}`}
-											style={{
-												backgroundColor: `var(--tg-theme-secondary-bg-color)`,
-											}}
-										>
-											<div>
-												<div className='pl-4 font-bold text-blue-500'>
-													{app.time}
-												</div>
-												<div className='pl-4 text-sm font-bold'>
-													{app.specialistName} {app.specialistLastName}
-												</div>
-												<div className='pl-4 w-95 text-xs break-words'>
-													{app.serviceName}
-												</div>
-												<div className='pl-4 text-sm text-blue-500'>
-													{app.specialistPrice} {app.serviceValuta}
-												</div>
-											</div>
-											<div className='pr-4'>
-												<MdArrowForwardIos />
-											</div>
-										</div>
-									</div>
-								</div>
-							}
-						>
-							<div key={app.id}>
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<CiCalendarDate
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>Дата записи</span>
-									</div>
-									<div className='text-blue-500 pr-4'>{app.date}</div>
-								</div>
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<MdMoreTime
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>Время записи</span>
-									</div>
-									<div className='text-blue-500 pr-4'>{app.time}</div>
-								</div>
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<MdChecklist
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>Услуга</span>
-									</div>
-									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-										{app.serviceName}
-									</div>
-								</div>
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<GrMoney
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>К оплате</span>
-									</div>
-									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-										{app.specialistPrice} {app.serviceValuta}
-									</div>
-								</div>
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<GrUser
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>Специалист</span>
-									</div>
-									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-										{app.specialistName} {app.specialistLastName}
-									</div>
-								</div>
-
-								<div className='flex items-center justify-between mb-4 mt-4'>
-									<div className='flex items-center pl-4'>
-										<MdOutlinePhoneIphone
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-										<span className='pl-4'>Телефон</span>
-									</div>
-									<div className='text-blue-500 pr-4 pl-8 break-words text-end'>
-										{app.specialistPhone}
-									</div>
-								</div>
-								<div className='flex justify-evenly mb-4'>
-									<button
-										onClick={() => router.push(`/perezapis/${app.id}`)}
-										className='bg-green-500 rounded-full px-5 py-3 text-white text-sm'
+						<>
+							<div key={app.id} className='pt-4'>
+								<div>
+									<div
+										className={`rounded-lg ml-4 mr-4 pt-2 pb-2 border-l-4 flex items-center justify-between ${
+											isPastAppointment ? 'border-red-500' : 'border-green-500'
+										}`}
+										style={{
+											backgroundColor: `var(--tg-theme-secondary-bg-color)`,
+										}}
 									>
-										<div className='flex items-center'>
-											<FaRegEdit className='mr-2' />
-											Перезаписать
+										<div>
+											<div className='pl-4 font-bold text-blue-500'>
+												{app.time}
+											</div>
+											<div className='pl-4 text-sm font-bold'>
+												{app.specialistName} {app.specialistLastName}
+											</div>
+											<div className='pl-4 text-xs font-normal text-blue-500'>
+												{app.specialistPhone}
+											</div>
+											<div className='pl-4 w-95 text-xs break-words'>
+												{app.serviceName}
+											</div>
+											<div className='pl-4 text-sm text-blue-500'>
+												{app.specialistPrice} {app.serviceValuta}
+											</div>
 										</div>
-									</button>
+										<div className='pr-4'>
+											<div>
+												<FaRegEdit
+													size={32}
+													className='bg-green-500 p-1 rounded-lg mb-2'
+													color='white'
+													onClick={() => router.push(`/perezapis/${app.id}`)}
+												/>
+											</div>
+											<Modal
+												header={<ModalHeader></ModalHeader>}
+												trigger={
+													<div className='flex justify-center'>
+														<button onClick={() => openCancelModal(app.id)}>
+															<div className='flex items-center'>
+																<MdDeleteForever
+																	size={32}
+																	className='bg-red-500 p-1 rounded-lg'
+																	color='white'
+																/>
+															</div>
+														</button>
+													</div>
+												}
+											>
+												<div className='flex flex-col ml-4 mr-4'>
+													<label className='pb-2'>Причина отмены</label>
+													<Input
+														value={cancelReason}
+														onChange={e => setCancelReason(e.target.value)}
+														placeholder='Сегодня не работаю'
+														className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+														style={{
+															background: `var(--tg-theme-section-bg-color)`,
+															color: `var(--tg-theme-text-color)`,
+														}}
+													/>
+
+													<ModalClose>
+														<Button
+															className=' ml-4 mr-4 mb-8'
+															size='m'
+															onClick={handleCancel}
+														>
+															Подтвердить
+														</Button>
+													</ModalClose>
+												</div>
+											</Modal>
+										</div>
+									</div>
 								</div>
 							</div>
-							<Modal
-								header={<ModalHeader></ModalHeader>}
-								trigger={
-									<div className='flex justify-center'>
-										<button
-											onClick={() => openCancelModal(app.id)}
-											className='bg-red-500 rounded-full px-9 py-3 mb-4  text-white text-sm'
-										>
-											<div className='flex items-center'>
-												<MdOutlineCancel className='mr-2' />
-												Отменить
-											</div>
-										</button>
-									</div>
-								}
-							>
-								<div className='flex flex-col ml-4 mr-4'>
-									<label className='pb-2'>Причина отмены</label>
-									<Input
-										value={cancelReason}
-										onChange={e => setCancelReason(e.target.value)}
-										placeholder='Сегодня не работаю'
-										className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
-										style={{
-											background: `var(--tg-theme-section-bg-color)`,
-											color: `var(--tg-theme-text-color)`,
-										}}
-									/>
-
-									<ModalClose>
-										<Button
-											className=' ml-4 mr-4 mb-8'
-											size='m'
-											onClick={handleCancel}
-										>
-											Подтвердить
-										</Button>
-									</ModalClose>
-								</div>
-							</Modal>
-						</Modal>
+							<></>
+						</>
 					)
 				})}
 			</div>
@@ -417,10 +335,10 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 					/>
 					<div className='flex items-center justify-evenly mt-4 '>
 						<div className='border-l-4 pl-2 border-green-500 text-xs'>
-							Не завершенная запись
+							Актуальная запись
 						</div>
 						<div className='border-l-4 pl-2 border-red-500 text-xs'>
-							Завершенная запись
+							Прошедшая запись
 						</div>
 					</div>
 				</div>

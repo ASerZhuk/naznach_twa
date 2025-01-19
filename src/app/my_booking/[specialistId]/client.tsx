@@ -474,10 +474,10 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 						</Select>
 						<div className='flex items-center justify-evenly mt-4 '>
 							<div className='border-l-4 pl-2 border-green-500 text-xs'>
-								Не завершенная запись
+								Актуальная запись
 							</div>
 							<div className='border-l-4 pl-2 border-red-500 text-xs'>
-								Завершенная запись
+								Прошедшая запись
 							</div>
 						</div>
 					</div>
