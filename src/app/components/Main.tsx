@@ -1,7 +1,7 @@
 'use client'
 
 import { Avatar, Image, Spin } from 'antd'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import {
 	FaBook,
@@ -45,6 +45,7 @@ interface MainProps {
 const Main = ({ user }: MainProps) => {
 	const { userPhoto, loading } = useTelegramUserProfile()
 	const router = useRouter()
+	const pathname = usePathname()
 
 	useEffect(() => {
 		const tg = window.Telegram.WebApp
@@ -115,6 +116,10 @@ const Main = ({ user }: MainProps) => {
 			path: `/my_booking/${user.telegramId}`,
 		},
 	]
+
+	const isActivePath = (path: string) => {
+		return pathname?.includes(path.split('/').slice(0, -1).join('/'))
+	}
 
 	return (
 		<>
@@ -206,12 +211,23 @@ const Main = ({ user }: MainProps) => {
 					{user.isMaster &&
 						masterMenuItems.map(item => (
 							<div
-								className='flex items-center justify-between pt-6'
+								key={item.path}
+								className={`flex items-center justify-between pt-6 px-2 mx-2 transition-all duration-200 ${
+									isActivePath(item.path)
+										? 'bg-blue-100 rounded-lg shadow-sm'
+										: 'hover:bg-gray-50'
+								}`}
 								onClick={() => navigateTo(`${item.path}`)}
 							>
 								<div className='flex items-center'>
 									<div>{item.icon}</div>
-									<div className='pl-6'>{item.label}</div>
+									<div
+										className={`pl-6 transition-all duration-200 ${
+											isActivePath(item.path) ? 'font-medium text-blue-600' : ''
+										}`}
+									>
+										{item.label}
+									</div>
 								</div>
 								<div
 									className='pr-4'
@@ -222,7 +238,11 @@ const Main = ({ user }: MainProps) => {
 							</div>
 						))}
 					<div
-						className='flex items-center justify-between pt-6'
+						className={`flex items-center justify-between pt-6 px-2 mx-2 transition-all duration-200 ${
+							isActivePath(`/my_specialist/${user.telegramId}`)
+								? 'bg-blue-100 rounded-lg shadow-sm'
+								: 'hover:bg-gray-50'
+						}`}
 						onClick={() => navigateTo(`/my_specialist/${user.telegramId}`)}
 					>
 						<div className='flex items-center'>
@@ -233,7 +253,15 @@ const Main = ({ user }: MainProps) => {
 									color='white'
 								/>
 							</div>
-							<div className='pl-6'>Мои специалисты</div>
+							<div
+								className={`pl-6 transition-all duration-200 ${
+									isActivePath(`/my_specialist/${user.telegramId}`)
+										? 'font-medium text-blue-600'
+										: ''
+								}`}
+							>
+								Мои специалисты
+							</div>
 						</div>
 						<div
 							className='pr-4'
@@ -243,7 +271,11 @@ const Main = ({ user }: MainProps) => {
 						</div>
 					</div>
 					<div
-						className='flex items-center justify-between pt-6'
+						className={`flex items-center justify-between pt-6 px-2 mx-2 transition-all duration-200 ${
+							isActivePath(`/my_list/${user.telegramId}`)
+								? 'bg-blue-100 rounded-lg shadow-sm'
+								: 'hover:bg-gray-50'
+						}`}
 						onClick={() => navigateTo(`/my_list/${user.telegramId}`)}
 					>
 						<div className='flex items-center'>
@@ -254,7 +286,15 @@ const Main = ({ user }: MainProps) => {
 									color='white'
 								/>
 							</div>
-							<div className='pl-6'>Мои записи</div>
+							<div
+								className={`pl-6 transition-all duration-200 ${
+									isActivePath(`/my_list/${user.telegramId}`)
+										? 'font-medium text-blue-600'
+										: ''
+								}`}
+							>
+								Мои записи
+							</div>
 						</div>
 						<div
 							className='pr-4'
