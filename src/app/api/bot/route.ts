@@ -2,16 +2,14 @@ import { NextResponse } from 'next/server'
 import TelegramBot from 'node-telegram-bot-api'
 import prisma from '@/app/libs/prismadb'
 
-const bot = new TelegramBot('7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g')
-const botUsername = 'naznach_twa_bot'
-const webAppUrl = 'https://naznach-twa.vercel.app/'
-
-// Устанавливаем вебхук на этот маршрут
-bot.setWebHook(`https://naznach-twa.vercel.app/api/bot`)
+const bot = new TelegramBot('7944780464:AAHZ3r1m_I1x8TFwxqku7xgfIbYyWzmQodY')
+const botUsername = 'Testnaznach_bot'
+const webAppUrl = 'https://185mdvp5-3000.euw.devtunnels.ms'
 
 export async function POST(req: Request) {
 	try {
 		const body = await req.json()
+		console.log('Incoming request body:', body)
 		const { message, callback_query } = body
 
 		if (message) {

@@ -6,13 +6,12 @@ import {
 	Cell,
 	Headline,
 	IconContainer,
-	Input,
 	List,
 	Modal,
 	Placeholder,
 	Section,
 } from '@telegram-apps/telegram-ui'
-import { Avatar, DatePicker, Image } from 'antd'
+import { Avatar, DatePicker, Image, Input } from 'antd'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { CiCalendarDate } from 'react-icons/ci'
@@ -31,13 +30,17 @@ import {
 	MdOutlineCancel,
 	MdMoreTime,
 	MdOutlinePhoneIphone,
+	MdArrowForwardIos,
+	MdChecklist,
+	MdDeleteForever,
 } from 'react-icons/md'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { ModalHeader } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalHeader/ModalHeader'
 import { ModalClose } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalClose/ModalClose'
 import { Icon28Dismiss } from '@vkontakte/icons'
-import { GrUser } from 'react-icons/gr'
+import { GrMoney, GrUser } from 'react-icons/gr'
+import { newDate } from 'react-datepicker/dist/date_utils'
 
 interface MyAppointmentlistProps {
 	appointment:
@@ -50,12 +53,13 @@ interface MyAppointmentlistProps {
 				date: string
 				time: string
 				phone: string
+				serviceName: string | null
+				serviceValuta: string | null
 				specialistName: string | null
 				specialistLastName: string | null
 				specialistAddress: string | null
 				specialistPrice: string | null
 				specialistPhone: string | null
-				specialistCategory: string | null
 		  }[]
 		| null
 
@@ -89,8 +93,11 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 
 		// Выполнение на клиенте: переворачиваем массив
 		if (appointment && appointment.length > 0) {
-			setClientAppointments([...appointment].reverse())
-			setFilteredAppointments([...appointment].reverse())
+			const filtered = appointment.filter(
+				app => app.clientId !== app.specialistId
+			)
+			setClientAppointments([...filtered].reverse())
+			setFilteredAppointments([...filtered].reverse())
 		}
 	}, [appointment])
 
@@ -144,6 +151,152 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 		setIsModalVisible(true)
 	}
 
+	const groupedAppointments = filteredAppointments.reduce((acc, app) => {
+		const date = app.date
+
+		const [day, month] = date.split('.')
+
+		if (!acc[date]) {
+			acc[date] = []
+		}
+		acc[date].push(app)
+		return acc
+	}, {} as { [key: string]: typeof filteredAppointments })
+
+	const months = [
+		'января',
+		'февраля',
+		'марта',
+		'апреля',
+		'мая',
+		'июня',
+		'июля',
+		'августа',
+		'сентября',
+		'октября',
+		'ноября',
+		'декабря',
+	]
+
+	const renderAppointments = Object.keys(groupedAppointments).map(date => {
+		const [day, month] = date.split('.')
+		const monthName = months[parseInt(month, 10) - 1]
+
+		return (
+			<div
+				key={date}
+				style={{ backgroundColor: `var(--tg-theme-section-bg-color)` }}
+				className='mt-4 pb-4'
+			>
+				<div className='pt-4 pl-4 text-xl font-semibold'>
+					{`${day} ${monthName}`} {/* Выводим день и месяц */}
+				</div>
+				{groupedAppointments[date].map(app => {
+					const [startTime, endTime] = app.time.split(' - ')
+
+					const convertToDate = (dateString: string, timeString: string) => {
+						const [day, month, year] = dateString.split('.').map(Number)
+						const [hours, minutes] = timeString.split(':').map(Number)
+						const date = new Date(year, month - 1, day, hours, minutes, 0, 0) // month - 1, так как месяц в JavaScript начинается с 0
+						return date
+					}
+					const startDate = convertToDate(date, startTime)
+					const endDate = convertToDate(date, endTime)
+
+					const now = new Date()
+
+					const isPastAppointment = now > endDate
+
+					return (
+						<>
+							<div key={app.id} className='pt-4'>
+								<div>
+									<div
+										className={`rounded-lg ml-4 mr-4 pt-2 pb-2 border-l-4 flex items-center justify-between ${
+											isPastAppointment ? 'border-red-500' : 'border-green-500'
+										}`}
+										style={{
+											backgroundColor: `var(--tg-theme-secondary-bg-color)`,
+										}}
+									>
+										<div>
+											<div className='pl-4 font-bold text-blue-500'>
+												{app.time}
+											</div>
+											<div className='pl-4 text-sm font-bold'>
+												{app.specialistName} {app.specialistLastName}
+											</div>
+											<div className='pl-4 text-xs font-normal text-blue-500'>
+												{app.specialistPhone}
+											</div>
+											<div className='pl-4 w-95 text-xs break-words'>
+												{app.serviceName}
+											</div>
+											<div className='pl-4 text-sm text-blue-500'>
+												{app.specialistPrice} {app.serviceValuta}
+											</div>
+										</div>
+										<div className='pr-4'>
+											<div>
+												<FaRegEdit
+													size={32}
+													className='bg-green-500 p-1 rounded-lg mb-2'
+													color='white'
+													onClick={() => router.push(`/perezapis/${app.id}`)}
+												/>
+											</div>
+											<Modal
+												header={<ModalHeader></ModalHeader>}
+												trigger={
+													<div className='flex justify-center'>
+														<button onClick={() => openCancelModal(app.id)}>
+															<div className='flex items-center'>
+																<MdDeleteForever
+																	size={32}
+																	className='bg-red-500 p-1 rounded-lg'
+																	color='white'
+																/>
+															</div>
+														</button>
+													</div>
+												}
+											>
+												<div className='flex flex-col ml-4 mr-4'>
+													<label className='pb-2'>Причина отмены</label>
+													<Input
+														value={cancelReason}
+														onChange={e => setCancelReason(e.target.value)}
+														placeholder='Сегодня не работаю'
+														className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+														style={{
+															background: `var(--tg-theme-section-bg-color)`,
+															color: `var(--tg-theme-text-color)`,
+														}}
+													/>
+
+													<ModalClose>
+														<Button
+															className=' ml-4 mr-4 mb-8'
+															size='m'
+															onClick={handleCancel}
+														>
+															Подтвердить
+														</Button>
+													</ModalClose>
+												</div>
+											</Modal>
+										</div>
+									</div>
+								</div>
+							</div>
+							<></>
+						</>
+					)
+				})}
+			</div>
+		)
+	})
+
 	return (
 		<>
 			<ToastContainer />
@@ -153,7 +306,7 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 					before={
 						<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
 					}
-					after={<Image width={150} src='/logo.svg' alt='Логотип' />}
+					after={<Image width={35} src='/logo.svg' alt='Логотип' />}
 				>
 					{telegram_user?.first_name}
 				</Cell>
@@ -180,248 +333,19 @@ const MyAppointmentlist: React.FC<MyAppointmentlistProps> = ({
 						format={'DD.MM.YYYY'}
 						style={{ width: '100%' }}
 					/>
+					<div className='flex items-center justify-evenly mt-4 '>
+						<div className='border-l-4 pl-2 border-green-500 text-xs'>
+							Актуальная запись
+						</div>
+						<div className='border-l-4 pl-2 border-red-500 text-xs'>
+							Прошедшая запись
+						</div>
+					</div>
 				</div>
 			</Section>
 
 			<List>
-				{filteredAppointments && filteredAppointments.length > 0 ? (
-					filteredAppointments.map(app => (
-						<Section key={app.id} className='mt-4'>
-							<Cell
-								before={
-									<IconContainer>
-										<CiCalendarDate
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-									</IconContainer>
-								}
-								after={<div className='text-blue-500'>{app.date}</div>}
-							>
-								Дата записи
-							</Cell>
-							<Cell
-								before={
-									<IconContainer>
-										<MdMoreTime
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-									</IconContainer>
-								}
-								after={<div className='text-blue-500'>{app.time}</div>}
-							>
-								Время записи
-							</Cell>
-							{app.specialistPrice && (
-								<Cell
-									before={
-										<IconContainer>
-											<MdOutlineAttachMoney
-												size={32}
-												className='bg-blue-500 rounded-lg p-1'
-												color='white'
-											/>
-										</IconContainer>
-									}
-									after={
-										<div className='text-blue-500'>
-											{app.specialistPrice} руб.
-										</div>
-									}
-								>
-									Стоимость услуги
-								</Cell>
-							)}
-							{app.specialistCategory && (
-								<Cell
-									before={
-										<IconContainer>
-											<MdCategory
-												size={32}
-												className='bg-blue-500 rounded-lg p-1'
-												color='white'
-											/>
-										</IconContainer>
-									}
-									after={
-										<div className='text-blue-500'>
-											{app.specialistCategory}
-										</div>
-									}
-								>
-									Категория
-								</Cell>
-							)}
-
-							{/* Информация о мастере */}
-							{user !== app.specialistId ? (
-								<>
-									<Cell
-										before={
-											<IconContainer>
-												<MdPerson
-													size={32}
-													className='bg-blue-500 rounded-lg p-1'
-													color='white'
-												/>
-											</IconContainer>
-										}
-										after={
-											<div className='text-blue-500'>
-												{app.specialistName} {app.specialistLastName}
-											</div>
-										}
-									>
-										Мастер
-									</Cell>
-									<Cell
-										before={
-											<IconContainer>
-												<MdPhone
-													size={32}
-													className='bg-blue-500 rounded-lg p-1'
-													color='white'
-												/>
-											</IconContainer>
-										}
-										after={
-											<div className='text-blue-500'>{app.specialistPhone}</div>
-										}
-									>
-										Телефон
-									</Cell>
-								</>
-							) : (
-								<>
-									<Cell
-										before={
-											<IconContainer>
-												<MdPerson
-													size={32}
-													className='bg-blue-500 rounded-lg p-1'
-													color='white'
-												/>
-											</IconContainer>
-										}
-										after={
-											<div className='text-blue-500'>
-												{app.firstName} {app.lastName}
-											</div>
-										}
-									>
-										Клиент
-									</Cell>
-									<Cell
-										before={
-											<IconContainer>
-												<MdPhone
-													size={32}
-													className='bg-blue-500 rounded-lg p-1'
-													color='white'
-												/>
-											</IconContainer>
-										}
-										after={<div className='text-blue-500'>{app.phone}</div>}
-									>
-										Телефон
-									</Cell>
-								</>
-							)}
-
-							{app.specialistAddress && (
-								<Cell
-									before={
-										<IconContainer>
-											<MdLocationOn
-												size={32}
-												className='bg-blue-500 rounded-lg p-1'
-												color='white'
-											/>
-										</IconContainer>
-									}
-									after={
-										<div className='text-blue-500'>{app.specialistAddress}</div>
-									}
-								>
-									Адрес
-								</Cell>
-							)}
-
-							<div className='flex flex-row p-4 justify-between'>
-								<div className='text-center pt-2'>
-									<button
-										onClick={() => router.push(`/perezapis/${app.id}`)}
-										className='bg-blue-500 rounded-full px-5 py-3  text-white text-sm'
-									>
-										<div className='flex items-center'>
-											<FaRegEdit className='mr-2' />
-											Перезаписать
-										</div>
-									</button>
-								</div>
-								<Modal
-									header={
-										<ModalHeader
-											after={
-												<ModalClose>
-													<Icon28Dismiss
-														style={{ color: 'var(--tgui--plain_foreground)' }}
-													/>
-												</ModalClose>
-											}
-										></ModalHeader>
-									}
-									trigger={
-										<div className='text-center pt-2'>
-											<button
-												onClick={() => openCancelModal(app.id)}
-												className='bg-red-500 rounded-full px-9 py-3  text-white text-sm'
-											>
-												<div className='flex items-center'>
-													<MdOutlineCancel className='mr-2' />
-													Отменить
-												</div>
-											</button>
-										</div>
-									}
-								>
-									<div className='flex flex-col justify-center'>
-										<Input
-											header='Причина отмены'
-											value={cancelReason}
-											onChange={e => setCancelReason(e.target.value)}
-											placeholder='Сегодня не работаю'
-											status='focused'
-										/>
-										<ModalClose>
-											<Button
-												className=' ml-4 mr-4 mb-8'
-												size='m'
-												onClick={handleCancel}
-											>
-												Подтвердить
-											</Button>
-										</ModalClose>
-									</div>
-								</Modal>
-							</div>
-						</Section>
-					))
-				) : (
-					<div className='HIJtihMA8FHczS02iWF5'>
-						<Placeholder header='Записей нет'>
-							<img
-								alt='Telegram sticker'
-								className='blt0jZBzpxuR4oDhJc8s'
-								src='https://media.giphy.com/media/TqGcOed29VJdjkNyy6/giphy.gif'
-								width='50%'
-							/>
-						</Placeholder>
-					</div>
-				)}
+				<div>{renderAppointments}</div>
 			</List>
 		</>
 	)

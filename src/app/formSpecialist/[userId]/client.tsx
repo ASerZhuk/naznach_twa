@@ -22,7 +22,6 @@ interface ClientProps {
 		firstName: string | null
 		username: string | null
 		userId: string
-		price: string | null
 		phone: string | null
 		address: string | null
 		category: string | null
@@ -35,7 +34,6 @@ const ClientForm = ({ user }: ClientProps) => {
 	const [formData, setFormData] = useState({
 		firstName: user.firstName || '',
 		lastName: user.lastName || '',
-		price: user.price || '',
 		phone: user.phone || '',
 		address: user.address || '',
 		category: user.category || '',
@@ -82,7 +80,6 @@ const ClientForm = ({ user }: ClientProps) => {
 		setFormData({
 			firstName: user.firstName || '',
 			lastName: user.lastName || '',
-			price: user.price || '',
 			phone: user.phone || '',
 			address: user.address || '',
 			category: user.category || '',
@@ -145,16 +142,7 @@ const ClientForm = ({ user }: ClientProps) => {
 								value={formData.lastName}
 								onChange={handleChange}
 							/>
-							<Input
-								status='focused'
-								header='Стоимость услуги (руб.)'
-								id='price'
-								name='price'
-								type='text'
-								placeholder='1000'
-								value={formData.price}
-								onChange={handleChange}
-							/>
+
 							<Input
 								status='focused'
 								header='Номер телефона'

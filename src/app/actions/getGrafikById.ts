@@ -4,7 +4,7 @@ const prisma = new PrismaClient()
 
 export async function getGrafikById(userId: string) {
 	try {
-		const timeSlots = await prisma.timeSlots.findMany({
+		const timeSlots = await prisma.grafik.findMany({
 			where: { specialistId: userId },
 		})
 		return timeSlots

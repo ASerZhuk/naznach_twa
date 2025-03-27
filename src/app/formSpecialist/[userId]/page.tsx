@@ -14,11 +14,7 @@ const FormPage = async ({ params }: ProfilePageProps) => {
 		return <div>Пользователь не найден</div>
 	}
 
-	return (
-		<AppRoot>
-			<ClientForm user={user} />
-		</AppRoot>
-	)
+	return <ClientForm user={user} />
 }
 
 export default FormPage

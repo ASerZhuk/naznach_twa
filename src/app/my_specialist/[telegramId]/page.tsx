@@ -15,11 +15,5 @@ export default async function MySpecialistList({
 }: MySpecialistListProps) {
 	const appointment = await getAppointmentByClientId(params.telegramId)
 
-	return (
-		<AppRoot>
-			<Container>
-				<MySpecialist appointment={appointment} />
-			</Container>
-		</AppRoot>
-	)
+	return <MySpecialist appointment={appointment} />
 }

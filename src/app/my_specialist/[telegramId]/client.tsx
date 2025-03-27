@@ -67,7 +67,7 @@ const MySpecialist: React.FC<MySpecialistProps> = ({ appointment }) => {
 						const specialistData = await res.json()
 
 						// Получаем фото профиля через Telegram API
-						const botToken = '6874087551:AAHHCPMYy9JXgHVBavUdce_YjoXWgd0Fuew' // Ваш токен бота
+						const botToken = '7655736393:AAGYAPPjBo1WWKhAXtcUMj0FsTWH35Y7D8g' // Ваш токен бота
 
 						try {
 							const profilePhotoResponse = await fetch(
@@ -118,7 +118,7 @@ const MySpecialist: React.FC<MySpecialistProps> = ({ appointment }) => {
 					before={
 						<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
 					}
-					after={<Image width={150} src='/logo.svg' alt='Логотип' />}
+					after={<Image width={35} src='/logo.svg' alt='Логотип' />}
 				>
 					{telegram_user?.first_name}
 				</Cell>

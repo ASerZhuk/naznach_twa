@@ -15,69 +15,89 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  telegramId String  @unique
-  firstName String?
-  lastName  String?
-  chatId    String?
-  username  String?
-  isMaster  Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id         Int        @id @default(autoincrement())
+  telegramId String     @unique
+  firstName  String?
+  lastName   String?
+  chatId     String?
+  username   String?
+  isMaster   Boolean     @default(false)
+  createdAt  DateTime   @default(now())
   specialist Specialist?
 }
 
 model Specialist {
-  id        Int      @id @default(autoincrement())
-  firstName String?
-  lastName  String?
-  chatId    String?
-  userId    String @unique
-  username  String?
-  image     String?
-  price     String?
-  phone     String?
-  category  String?
-  description String?
-  status String?
-  address   String?
-  isMaster  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  user      User @relation(fields: [userId], references: [telegramId])
-  timeSlots  TimeSlots[]
-  appointments Appointments[]
-  
-}
-
-model TimeSlots {
-  id           Int      @id @default(autoincrement())
-  specialistId String
-  specialist   Specialist @relation(fields: [specialistId], references: [userId])
-  dayOfWeek    Int
-  startTime    String
-  endTime      String
-  interval     Int
-  time         String[]
-  grafikName   String  
+  id           Int         @id @default(autoincrement())
+  firstName    String?
+  lastName     String?
+  chatId       String?
+  userId       String      @unique
+  username      String?
+  image        String?
+  phone        String?
+  category     String?
+  description  String?
+  status       String?
+  address      String?
+  isMaster     Boolean      @default(false)
+  createdAt    DateTime    @default(now())
+  user         User        @relation(fields: [userId], references: [telegramId])
+  grafik       Grafik[]
+  services     Service[]
+  appointments  Appointments[]
 
 }
+
+model Service {
+  id             Int         @id @default(autoincrement())
+  specialistId   String
+  name           String
+  description    String?
+  price          String?
+  duration       Int        
+  valuta         String?
+  appointments   AppointmentServices[]
+  specialist     Specialist  @relation(fields: [specialistId], references: [userId])
+}
+
+model Grafik {
+  id            Int        @id @default(autoincrement())
+  specialistId  String
+  dayOfWeek     Int
+  startTime     String
+  endTime       String
+  grafikName    String 
+  specialist    Specialist  @relation(fields: [specialistId], references: [userId])
+
+}
+
 
 model Appointments {
-  id        Int      @id @default(autoincrement())
-  clientId String
-  firstName String
-  lastName String
-  specialistId String
-  specialist   Specialist @relation(fields: [specialistId], references: [userId])
-  date String
-  time String
-  phone String
-  specialistName String?
+  id                 Int         @id @default(autoincrement())
+  clientId          String
+  firstName         String
+  lastName          String
+  specialistId      String
+  serviceName       String?
+  serviceValuta     String?
+  date              String
+  time              String
+  phone             String
+  specialistName    String?
   specialistLastName String?
-  specialistAddress String?
-  specialistPrice String?
-  specialistPhone String?
-  specialistCategory String?
+  specialistAddress  String?
+  specialistPrice    String?
+  specialistPhone    String?
+  specialist        Specialist  @relation(fields: [specialistId], references: [userId])
+  services            AppointmentServices[]
+}
 
+model AppointmentServices {
+  id           Int       @id @default(autoincrement())
+  appointment  Appointments @relation(fields: [appointmentId], references: [id])
+  appointmentId Int
+  service      Service    @relation(fields: [serviceId], references: [id])
+  serviceId    Int
 }
 
 

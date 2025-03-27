@@ -10,6 +10,7 @@
 		"postinstall": "npx prisma generate"
 	},
 	"dependencies": {
+		"@next/env": "^15.1.0",
 		"@prisma/client": "^5.22.0",
 		"@telegram-apps/sdk": "^1.1.3",
 		"@telegram-apps/telegram-ui": "^2.1.8",
@@ -25,7 +26,7 @@
 		"react-datepicker": "^7.4.0",
 		"react-dom": "^18",
 		"react-icons": "^5.3.0",
-		"react-toastify": "^10.0.5",
+		"react-toastify": "^10.0.6",
 		"supports-color": "^9.4.0",
 		"telegram-webapps-types": "^1.0.5"
 	},

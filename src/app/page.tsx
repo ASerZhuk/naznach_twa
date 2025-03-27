@@ -1,45 +1,78 @@
 'use client'
 
-import Container from './components/Container'
 import { useEffect, useState } from 'react'
 import Main from './components/Main'
-import { getUserById } from './actions/getUserById'
-import { AppRoot } from '@telegram-apps/telegram-ui'
+import { Spin } from 'antd'
 
 export default function Home() {
-	const [telegramId, setTelegramId] = useState<string>()
+	const [user, setUser] = useState(null)
+	const [appointments, setAppointments] = useState([])
 	const [loading, setLoading] = useState(true)
-	const [user, setUser] = useState<any>(null)
 
 	useEffect(() => {
-		const tg = window.Telegram.WebApp
-		tg.ready()
+		const initApp = async () => {
+			try {
+				const tg = window.Telegram.WebApp
+				tg.ready()
 
-		const id = tg.initDataUnsafe?.user?.id.toString()
-		setTelegramId(id)
-		console.log(id)
+				const userId = tg.initDataUnsafe?.user?.id.toString()
 
-		const fetchUser = async () => {
-			if (telegramId) {
-				try {
-					const userData = await getUserById(telegramId) // передаем идентификатор
-					setUser(userData)
-				} catch (error) {
-					console.error('Ошибка при загрузке пользователя:', error)
-				} finally {
-					setLoading(false)
+				if (userId) {
+					// Получаем данные пользователя
+					const userResponse = await fetch('/api/getUser', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ userId }),
+					})
+
+					if (userResponse.ok) {
+						const userData = await userResponse.json()
+						setUser(userData)
+
+						// Получаем записи пользователя
+						const appointmentsResponse = await fetch(
+							'/api/getUserAppointments',
+							{
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json',
+								},
+								body: JSON.stringify({
+									userId: userData.telegramId,
+									isMaster: userData.isMaster,
+								}),
+							}
+						)
+
+						if (appointmentsResponse.ok) {
+							const appointmentsData = await appointmentsResponse.json()
+							setAppointments(appointmentsData)
+						}
+					}
 				}
+			} catch (error) {
+				console.error('Error initializing app:', error)
+			} finally {
+				setLoading(false)
 			}
 		}
 
-		fetchUser()
-	}, [telegramId])
+		initApp()
+	}, [])
 
-	return (
-		<AppRoot>
-			<Container>
-				<Main user={user} />
-			</Container>
-		</AppRoot>
-	)
+	if (loading) {
+		return (
+			<div className='flex justify-center items-center h-screen'>
+				<Spin size='large' />
+			</div>
+		)
+	}
+
+	if (!user) {
+		return null
+	}
+
+	return <Main user={user} appointments={appointments} />
 }

@@ -17,11 +17,5 @@ export default async function MyList({ params }: MyListProps) {
 	const appointment = await getAppointmentByClientId(params.telegramId)
 	const user = params.telegramId
 
-	return (
-		<AppRoot>
-			<Container>
-				<MyAppointmentlist appointment={appointment} user={user} />
-			</Container>
-		</AppRoot>
-	)
+	return <MyAppointmentlist appointment={appointment} user={user} />
 }

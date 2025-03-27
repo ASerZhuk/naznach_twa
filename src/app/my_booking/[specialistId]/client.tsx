@@ -1,27 +1,37 @@
 'use client'
 
 import useTelegramUserProfile from '@/app/hooks/useTelegramUserProfile'
-import { Avatar, Image, DatePicker } from 'antd'
+import { Avatar, Image, DatePicker, Select, Input } from 'antd'
 import locale from 'antd/es/date-picker/locale/ru_RU'
 import dayjs, { Dayjs } from 'dayjs'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
-import { FaRegEdit } from 'react-icons/fa'
+import {
+	FaRegEdit,
+	FaTelegramPlane,
+	FaUserAltSlash,
+	FaWhatsapp,
+} from 'react-icons/fa'
 import {
 	MdOutlineCancel,
 	MdMoreTime,
 	MdOutlinePhoneIphone,
+	MdChecklist,
+	MdArrowForwardIos,
+	MdDeleteForever,
 } from 'react-icons/md'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 import './calendar.css'
 import {
+	AppRoot,
+	Blockquote,
 	Button,
+	ButtonCell,
 	Cell,
 	Headline,
 	IconContainer,
-	Input,
 	List,
 	Modal,
 	Placeholder,
@@ -29,7 +39,7 @@ import {
 } from '@telegram-apps/telegram-ui'
 import { LuCalendarPlus } from 'react-icons/lu'
 import { CiCalendarDate } from 'react-icons/ci'
-import { GrUser } from 'react-icons/gr'
+import { GrMoney, GrPhone, GrUser } from 'react-icons/gr'
 import { ModalClose } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalClose/ModalClose'
 import { ModalHeader } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalHeader/ModalHeader'
 import { Icon28Dismiss } from '@vkontakte/icons'
@@ -44,13 +54,14 @@ interface MySpecialBookingProps {
 				specialistId: string
 				date: string
 				time: string
+				serviceName: string | null
+				serviceValuta: string | null
 				phone: string
 				specialistName: string | null
 				specialistLastName: string | null
 				specialistAddress: string | null
 				specialistPrice: string | null
 				specialistPhone: string | null
-				specialistCategory: string | null
 		  }[]
 		| null
 }
@@ -61,14 +72,28 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 	const [clientAppointments, setClientAppointments] = useState(
 		appointment || []
 	)
-	const [isModalVisible, setIsModalVisible] = useState(false)
+
 	const [cancelReason, setCancelReason] = useState('')
+	const [writeSpec, setWriteSpec] = useState(false)
+	const [message, setMessage] = useState({
+		date: '',
+		time: '',
+		specialistName: '',
+		specialistLastName: '',
+		specialistPhone: '',
+	})
+
 	const [selectedAppointmentId, setSelectedAppointmentId] = useState<
 		number | null
 	>(null)
 	const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null)
 	const [filteredAppointments, setFilteredAppointments] =
 		useState(clientAppointments)
+	const [selectedService, setSelectedService] = useState<string | null>(null)
+	const servicesList = Array.from(
+		new Set(clientAppointments.map(app => app.serviceName))
+	)
+	const [filter, setFilter] = useState('all')
 
 	useEffect(() => {
 		const tg = window.Telegram.WebApp
@@ -84,15 +109,22 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 	}, [appointment])
 
 	useEffect(() => {
-		if (selectedDate) {
-			const filtered = clientAppointments.filter(app =>
-				dayjs(app.date, 'DD.MM.YYYY').isSame(dayjs(selectedDate), 'day')
-			)
+		if (selectedDate || selectedService) {
+			const filtered = clientAppointments.filter(app => {
+				const isSameDate = selectedDate
+					? dayjs(app.date, 'DD.MM.YYYY').isSame(dayjs(selectedDate), 'day')
+					: true
+				const isSameService = selectedService
+					? app.serviceName === selectedService
+					: true
+
+				return isSameDate && isSameService
+			})
 			setFilteredAppointments(filtered)
 		} else {
 			setFilteredAppointments(clientAppointments)
 		}
-	}, [selectedDate, clientAppointments])
+	}, [selectedDate, selectedService, clientAppointments])
 
 	const handleCancel = async () => {
 		if (!cancelReason.trim()) {
@@ -116,7 +148,6 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 						prevAppointments.filter(app => app.id !== selectedAppointmentId)
 					)
 					toast.success('Запись успешно отменена')
-					setIsModalVisible(false) // Закрываем модальное окно после успешного удаления
 				} else {
 					toast.error('Не удалось отменить запись')
 				}
@@ -127,176 +158,233 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 		}
 	}
 
-	const openCancelModal = (appointmentId: number) => {
+	const openCancelModal = (
+		appointmentId: number,
+		clientId: string,
+		specialistId: string,
+		date: string,
+		time: string,
+		specialistName: string | null,
+		specialistLastName: string | null,
+		specialistPhone: string | null
+	) => {
 		setSelectedAppointmentId(appointmentId)
-		setCancelReason('') // Сбрасываем причину при каждом новом открытии модального окна
-		setIsModalVisible(true)
+		setCancelReason('')
+
+		if (clientId === specialistId) {
+			setWriteSpec(true)
+			setMessage({
+				date: date,
+				time: time,
+				specialistName: specialistName || 'Не указано',
+				specialistLastName: specialistLastName || 'Не указано',
+				specialistPhone: specialistPhone || 'Не указано',
+			})
+		}
 	}
+	const messageData = `Ваша запись на ${message.date} в ${message.time} к мастеру ${message.specialistName} ${message.specialistLastName} отменена. Причина: ${cancelReason}. Телефон для связи: ${message.specialistPhone}. Уведомление из приложения: https://t.me/naznach_twa_bot`
+	const encodedMessage = encodeURIComponent(messageData)
 
-	return (
-		<>
-			<ToastContainer />
-			<Modal
-				title='Причина отмены'
-				//visible={isModalVisible}
-				//onOk={handleCancel}
-				//onCancel={() => setIsModalVisible(false)}
-				//okText='Подтвердить'
-				//cancelText='Отмена'
+	const groupedAppointments = filteredAppointments.reduce((acc, app) => {
+		const date = app.date
+
+		// Разделяем дату на день и месяц
+		const [day, month] = date.split('.')
+
+		if (!acc[date]) {
+			acc[date] = []
+		}
+		acc[date].push(app)
+		return acc
+	}, {} as { [key: string]: typeof filteredAppointments })
+
+	const months = [
+		'января',
+		'февраля',
+		'марта',
+		'апреля',
+		'мая',
+		'июня',
+		'июля',
+		'августа',
+		'сентября',
+		'октября',
+		'ноября',
+		'декабря',
+	]
+
+	// Рендерим записи с датами в читаемом формате
+	const renderAppointments = Object.keys(groupedAppointments).map(date => {
+		const [day, month] = date.split('.') // Разделяем дату на день и месяц
+		const monthName = months[parseInt(month, 10) - 1] // Преобразуем номер месяца в название
+
+		return (
+			<div
+				key={date}
+				style={{ backgroundColor: `var(--tg-theme-section-bg-color)` }}
+				className='mt-4 pb-4'
 			>
-				<Input
-					value={cancelReason}
-					onChange={e => setCancelReason(e.target.value)}
-					placeholder='Введите причину отмены'
-				/>
-			</Modal>
-
-			<Section className='pt-2 pb-4'>
-				<Cell
-					before={
-						<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
-					}
-					after={<Image width={150} src='/logo.svg' alt='Логотип' />}
-				>
-					{telegram_user?.first_name}
-				</Cell>
-			</Section>
-
-			<Section className='pt-2'>
-				<Cell
-					before={
-						<LuCalendarPlus
-							size={32}
-							className='bg-blue-500 p-1 rounded-lg'
-							color='white'
-						/>
-					}
-					subtitle='Актуальные и прошедшие записи'
-				>
-					<Headline weight='2'>Запись ко мне</Headline>
-				</Cell>
-				<div className=' p-4'>
-					<DatePicker
-						locale={locale}
-						onChange={date => setSelectedDate(date)}
-						placeholder='Выберите дату'
-						format={'DD.MM.YYYY'}
-						style={{ width: '100%' }}
-					/>
+				<div className='pt-4 pl-4 text-xl font-semibold'>
+					{`${day} ${monthName}`} {/* Выводим день и месяц */}
 				</div>
-			</Section>
+				{groupedAppointments[date].map(app => {
+					// Извлекаем время начала и конца из строки вида "12:00 - 16:45"
+					const [startTime, endTime] = app.time.split(' - ')
 
-			<List>
-				{filteredAppointments && filteredAppointments.length > 0 ? (
-					filteredAppointments.map(app => (
-						<Section key={app.id} className='mt-4'>
-							<Cell
-								before={
-									<IconContainer>
-										<CiCalendarDate
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-									</IconContainer>
-								}
-								after={<div className='text-blue-500'>{app.date}</div>}
-							>
-								Дата записи
-							</Cell>
-							<Cell
-								before={
-									<IconContainer>
-										<MdMoreTime
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-									</IconContainer>
-								}
-								after={<div className='text-blue-500'>{app.time}</div>}
-							>
-								Время записи
-							</Cell>
-							<Cell
-								before={
-									<IconContainer>
-										<GrUser
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-									</IconContainer>
-								}
-								after={
-									<div className='text-blue-500'>
-										{app.firstName} {app.lastName}
-									</div>
-								}
-							>
-								Имя клиента
-							</Cell>
-							<Cell
-								before={
-									<IconContainer>
-										<MdOutlinePhoneIphone
-											size={32}
-											className='bg-blue-500 rounded-lg p-1'
-											color='white'
-										/>
-									</IconContainer>
-								}
-								after={<div className='text-blue-500'>{app.phone}</div>}
-							>
-								Телефон
-							</Cell>
+					// Функция для преобразования строки "19.01.2025 12:00" в объект Date
+					const convertToDate = (dateString: string, timeString: string) => {
+						const [day, month, year] = dateString.split('.').map(Number)
+						const [hours, minutes] = timeString.split(':').map(Number)
+						const date = new Date(year, month - 1, day, hours, minutes, 0, 0) // month - 1, так как месяц в JavaScript начинается с 0
+						return date
+					}
 
-							<div className='flex flex-row p-4 justify-between'>
-								<div className='text-center pt-2'>
-									<button
-										onClick={() => router.push(`/perezapis/${app.id}`)}
-										className='bg-blue-500 rounded-full px-5 py-3  text-white text-sm'
-									>
-										<div className='flex items-center'>
-											<FaRegEdit className='mr-2' />
-											Перезаписать
-										</div>
-									</button>
-								</div>
-								<Modal
-									header={
-										<ModalHeader
-											after={
-												<ModalClose>
-													<Icon28Dismiss
-														style={{ color: 'var(--tgui--plain_foreground)' }}
-													/>
-												</ModalClose>
-											}
-										></ModalHeader>
-									}
-									trigger={
-										<div className='text-center pt-2'>
-											<button
-												onClick={() => openCancelModal(app.id)}
-												className='bg-red-500 rounded-full px-9 py-3  text-white text-sm'
-											>
-												<div className='flex items-center'>
-													<MdOutlineCancel className='mr-2' />
-													Отменить
-												</div>
-											</button>
-										</div>
-									}
+					// Сначала преобразуем дату и время в Date объекты для начала и конца
+					const startDate = convertToDate(date, startTime)
+					const endDate = convertToDate(date, endTime)
+
+					// Получаем текущее время
+					const now = new Date()
+
+					// Проверка, если текущее время больше или равно конечному времени, то запись устарела
+					const isPastAppointment = now > endDate
+
+					return (
+						
+								<><div key={app.id} className='pt-4'>
+							<div>
+								<div
+									className={`rounded-lg ml-4 mr-4 pt-2 pb-2 border-l-4 flex items-center justify-between ${isPastAppointment
+											? 'border-red-500'
+											: 'border-green-500'}`}
+									style={{
+										backgroundColor: `var(--tg-theme-secondary-bg-color)`,
+									}}
 								>
-									<div className='flex flex-col justify-center'>
+									<div>
+										<div className='pl-4 font-bold text-blue-500'>
+											{app.time}
+										</div>
+										<div className='pl-4 text-sm font-bold'>
+											{app.firstName} {app.lastName}
+										</div>
+										<div className='pl-4 text-xs font-normal text-blue-500'>
+											{app.phone}
+										</div>
+										<div className='pl-4 w-95 text-xs break-words'>
+											{app.serviceName}
+										</div>
+										<div className='pl-4 text-sm text-blue-500'>
+											{app.specialistPrice} {app.serviceValuta}
+										</div>
+									</div>
+									<div className='pr-4'>
+										<div><FaRegEdit
+												size={32}
+												className='bg-green-500 p-1 rounded-lg mb-2'
+												color='white'
+												onClick={() => router.push(`/perezapis/${app.id}`)}
+											/></div>
+										<Modal
+											header={<ModalHeader></ModalHeader>}
+											trigger={<div className='flex justify-center'>
+											<button
+												onClick={() => openCancelModal(
+													app.id,
+													app.clientId,
+													app.specialistId,
+													app.date,
+													app.time,
+													app.specialistName,
+													app.specialistLastName,
+													app.specialistPhone
+												)}
+											>
+											<div className='flex items-center'>
+												<MdDeleteForever
+													size={32}
+													className='bg-red-500 p-1 rounded-lg'
+													color='white'
+												/>	
+											</div>
+									</button>
+							</div>}
+						>
+								{app.clientId === app.specialistId ? (
+									<div className='flex flex-col ml-4 mr-4'>
+										<label className='pb-2'>Причина отмены</label>
 										<Input
-											header='Причина отмены'
 											value={cancelReason}
 											onChange={e => setCancelReason(e.target.value)}
 											placeholder='Сегодня не работаю'
-											status='focused'
-										/>
+											className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+											style={{
+												background: `var(--tg-theme-section-bg-color)`,
+												color: `var(--tg-theme-text-color)`,
+											}} />
+
+										<div>
+											<Blockquote className='flex flex-col' type='text'>
+												<div>Автоматическое сообщение клиенту:</div>
+												<div className='mt-2'>
+													Ваша запись на {app.date} в {app.time} к мастеру{' '}
+													{app.specialistName} {app.specialistLastName}{' '}
+													отменена. Причина: {cancelReason}. Телефон для связи:{' '}
+													{app.specialistPhone}. Уведомление из приложения:{' '}
+													<a href='https://t.me/naznach_twa_bot'>
+														https://t.me/naznach_twa_bot
+													</a>
+												</div>
+											</Blockquote>
+										</div>
+
+										<div onClick={handleCancel} className='flex mt-4 mb-3 ml-6'>
+											<FaTelegramPlane size={24} color='#3b82f6' />
+											<a
+												href={`https://t.me/${app.phone}?text=${encodeURIComponent(messageData)}`}
+											>
+												<span className='text-blue-500 ml-4'>
+													Отменить и отправить клиенту в Telegram
+												</span>
+											</a>
+										</div>
+
+										<div
+											className='flex mt-4 mb-3 ml-6'
+											onClick={() => {
+												handleCancel()
+												window.open(
+													`https://wa.me/${app.phone}?text=${encodedMessage}`
+												)
+											} }
+										>
+											<FaWhatsapp size={24} color='green' />
+											<span className='text-green-500 ml-4'>
+												Отменить и отправить клиенту в WhatsApp
+											</span>
+										</div>
+
+										<Button
+											className=' ml-4 mr-4 mb-8'
+											size='m'
+											onClick={handleCancel}
+										>
+											Отменить без уведомления клиенту
+										</Button>
+									</div>
+								) : (
+									<div className='flex flex-col ml-4 mr-4'>
+										<label className='pb-2'>Причина отмены</label>
+										<Input
+											value={cancelReason}
+											onChange={e => setCancelReason(e.target.value)}
+											placeholder='Сегодня не работаю'
+											className='border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-8'
+											style={{
+												background: `var(--tg-theme-section-bg-color)`,
+												color: `var(--tg-theme-text-color)`,
+											}} />
+
 										<ModalClose>
 											<Button
 												className=' ml-4 mr-4 mb-8'
@@ -307,23 +395,85 @@ const MySpecialBooking: React.FC<MySpecialBookingProps> = ({ appointment }) => {
 											</Button>
 										</ModalClose>
 									</div>
-								</Modal>
+								)}
+							</Modal>
+							
+									</div>
+								</div>
 							</div>
-						</Section>
-					))
-				) : (
-					<div className='HIJtihMA8FHczS02iWF5'>
-						<Placeholder header='Записей нет'>
-							<img
-								alt='Telegram sticker'
-								className='blt0jZBzpxuR4oDhJc8s'
-								src='https://media.giphy.com/media/TqGcOed29VJdjkNyy6/giphy.gif'
-								width='50%'
+						</div>
+						</>
+						
+					)
+				})}
+			</div>
+		)
+	})
+
+	return (
+		<>
+			<ToastContainer />
+			<AppRoot>
+				<Section className='pt-2 pb-4'>
+					<Cell
+						before={
+							<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
+						}
+						after={<Image width={35} src='/logo.svg' alt='Логотип' />}
+					>
+						{telegram_user?.first_name}
+					</Cell>
+				</Section>
+
+				<Section className='pt-2'>
+					<Cell
+						before={
+							<LuCalendarPlus
+								size={32}
+								className='bg-blue-500 p-1 rounded-lg'
+								color='white'
 							/>
-						</Placeholder>
+						}
+						subtitle='Актуальные и прошедшие записи'
+					>
+						<Headline weight='2'>Запись ко мне</Headline>
+					</Cell>
+					<div className=' p-4'>
+						<DatePicker
+							locale={locale}
+							onChange={date => setSelectedDate(date)}
+							placeholder='Выберите дату'
+							format={'DD.MM.YYYY'}
+							style={{ width: '100%' }}
+						/>
+						<Select
+							style={{ width: '100%', marginTop: '16px' }}
+							placeholder='Выберите услугу'
+							onChange={value => setSelectedService(value)}
+							defaultValue={null}
+						>
+							<Select.Option value={null}>Все услуги</Select.Option>
+							{servicesList.map(service => (
+								<Select.Option key={service} value={service}>
+									{service}
+								</Select.Option>
+							))}
+						</Select>
+						<div className='flex items-center justify-evenly mt-4 '>
+							<div className='border-l-4 pl-2 border-green-500 text-xs'>
+								Не завершенная запись
+							</div>
+							<div className='border-l-4 pl-2 border-red-500 text-xs'>
+								Завершенная запись
+							</div>
+						</div>
 					</div>
-				)}
-			</List>
+				</Section>
+
+				<List>
+					<div>{renderAppointments}</div>
+				</List>
+			</AppRoot>
 		</>
 	)
 }

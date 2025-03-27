@@ -1,11 +1,12 @@
 import React from 'react'
 import { getSpecialistByUseId } from '@/app/actions/getSpecialistByUserId'
 import { getGrafikById } from '@/app/actions/getGrafikById'
-import Container from '@/app/components/Container'
+
 import { getAppointmentById } from '@/app/actions/getAppointmentById'
 import Perezapis from './client'
-import { AppRoot } from '@telegram-apps/telegram-ui'
 
+import { getServicesById } from '@/app/actions/getServicesById'
+import { getServiceIdById } from '@/app/actions/getServiceIdById'
 interface PereZapisPageProps {
 	params: {
 		id: number
@@ -18,6 +19,7 @@ interface Appointment {
 	firstName: string
 	lastName: string
 	specialistId: string
+
 	date: string
 	time: string
 	phone: string
@@ -26,7 +28,7 @@ interface Appointment {
 	specialistAddress: string | null
 	specialistPrice: string | null
 	specialistPhone: string | null
-	specialistCategory: string | null
+	serviceName: string | null
 }
 
 const page = async ({ params }: PereZapisPageProps) => {
@@ -48,13 +50,17 @@ const page = async ({ params }: PereZapisPageProps) => {
 	}
 
 	const grafik = (await getGrafikById(appointment.specialistId)) || []
+	const serviceIds = await getServiceIdById(appointment.id)
+	const service = await getServicesById(appointment.specialistId)
 
 	return (
-		<AppRoot>
-			<Container>
-				<Perezapis garfik={grafik} user={user} appointments={appointment} />
-			</Container>
-		</AppRoot>
+		<Perezapis
+			grafik={grafik || []}
+			user={user}
+			service={service || []}
+			appointments={appointment}
+			serviceIds={serviceIds || []}
+		/>
 	)
 }
 

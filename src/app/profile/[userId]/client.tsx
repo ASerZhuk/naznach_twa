@@ -12,6 +12,7 @@ import {
 	Button,
 	Placeholder,
 	Input,
+	ButtonCell,
 } from '@telegram-apps/telegram-ui'
 import { ModalClose } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalClose/ModalClose'
 import { ModalHeader } from '@telegram-apps/telegram-ui/dist/components/Overlays/Modal/components/ModalHeader/ModalHeader'
@@ -31,7 +32,9 @@ import {
 } from 'react-icons/fa'
 import { GiPositionMarker } from 'react-icons/gi'
 import { GrMoney } from 'react-icons/gr'
+import { ImLink } from 'react-icons/im'
 import { IoIosArrowForward } from 'react-icons/io'
+import { LuFileSymlink } from 'react-icons/lu'
 import {
 	MdArrowForwardIos,
 	MdKeyboardArrowDown,
@@ -47,7 +50,6 @@ interface ClientProps {
 		firstName: string | null
 		userId: string
 		username: string | null
-		price: string | null
 		phone: string | null
 		category: string | null
 		address: string | null
@@ -59,15 +61,24 @@ interface ClientProps {
 				specialistId: string | undefined
 				startTime: string
 				endTime: string
-				interval: number
 				dayOfWeek: number
-				time: string[]
 				id?: number
+		  }[]
+		| null
+	service:
+		| {
+				id: number
+				description: string | null
+				name: string
+				specialistId: string
+				price: string | null
+				duration: number
+				valuta: string | null
 		  }[]
 		| null
 }
 
-const Client = ({ user, grafik }: ClientProps) => {
+const Client = ({ user, grafik, service }: ClientProps) => {
 	const [userPhoto, setUserPhoto] = useState<string | undefined>()
 	const [status, setStatus] = useState(user.status)
 
@@ -86,7 +97,7 @@ const Client = ({ user, grafik }: ClientProps) => {
 		tg.MainButton.onClick(() => router.push(`/formSpecialist/${user.userId}`))
 
 		if (user) {
-			const botToken = '6874087551:AAHHCPMYy9JXgHVBavUdce_YjoXWgd0Fuew' // Замените на токен вашего бота
+			const botToken = '7944780464:AAHZ3r1m_I1x8TFwxqku7xgfIbYyWzmQodY' // Замените на токен вашего бота
 
 			fetch(
 				`https://api.telegram.org/bot${botToken}/getUserProfilePhotos?user_id=${user.userId}`
@@ -130,11 +141,19 @@ const Client = ({ user, grafik }: ClientProps) => {
 	}, [user])
 
 	// Функция для преобразования числового дня недели в текстовый
-	const dayOfWeekNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+	const dayOfWeekNames = [
+		'Воскресенье', // 0
+		'Понедельник', // 1
+		'Вторник', // 2
+		'Среда', // 3
+		'Четверг', // 4
+		'Пятница', // 5
+		'Суббота', // 6
+	]
 
-	const toggleExpanded = () => {
-		setExpanded(!expanded)
-	}
+	const sortedGrafik = grafik
+		? [...grafik].sort((a, b) => a.dayOfWeek - b.dayOfWeek) // Сортируем по дню недели
+		: []
 
 	const info = async () => {
 		const status = document.getElementById('status') as HTMLInputElement
@@ -161,6 +180,15 @@ const Client = ({ user, grafik }: ClientProps) => {
 			}
 		}
 	}
+	const personalLink = `https://t.me/testnaznach_bot?start=${user.userId}`
+	const handleCopyLink = async () => {
+		try {
+			await navigator.clipboard.writeText(personalLink)
+			alert('Ссылка скопирована в буфер обмена!')
+		} catch (err) {
+			console.error('Не удалось скопировать ссылку: ', err)
+		}
+	}
 
 	return (
 		<Container>
@@ -170,7 +198,7 @@ const Client = ({ user, grafik }: ClientProps) => {
 					before={
 						<Avatar src={userPhoto || '/placeholder-image.jpg'} size={48} />
 					}
-					after={<Image width={150} src='/logo.svg' alt='Логотип' />}
+					after={<Image width={35} src='/logo.svg' alt='Логотип' />}
 				>
 					{user?.firstName}
 				</Cell>
@@ -223,7 +251,7 @@ const Client = ({ user, grafik }: ClientProps) => {
 				<Cell>
 					<div className='flex flex-row items-center'>
 						<div className=''>
-							<Avatar src={userPhoto} size={100} />
+							<Avatar src={userPhoto} size={90} />
 						</div>
 						<div className='flex flex-col gap-1 ml-2'>
 							<div className='text-xl font-semibold'>
@@ -238,18 +266,22 @@ const Client = ({ user, grafik }: ClientProps) => {
 								<div className='text-blue-500'>{user.phone}</div>
 							</div>
 
-							<div className='mb-2 font-light'>{user.category}</div>
+							<div className='mb-2 text-xs font-light'>{user.address}</div>
 						</div>
 					</div>
 				</Cell>
-
+				<ButtonCell onClick={handleCopyLink}>
+					Скопировать ссылку для записи
+				</ButtonCell>
 				<Cell>
+					<div className='mb-2 text-lg font-semibold'>{user.category}</div>
 					<div className='text-wrap'>
 						{user.description?.split('\n').map((line, index) => (
 							<p key={index}>{line}</p>
 						))}
 					</div>
 				</Cell>
+
 				<Cell
 					before={
 						<IconContainer>
@@ -260,31 +292,24 @@ const Client = ({ user, grafik }: ClientProps) => {
 							/>
 						</IconContainer>
 					}
-					after={
-						<IconContainer>
-							{expanded ? (
-								<MdKeyboardArrowUp size={24} />
-							) : (
-								<MdKeyboardArrowDown size={24} />
-							)}
-						</IconContainer>
-					}
-					onClick={toggleExpanded}
 				>
-					Мой график
-					{expanded && grafik && grafik.length > 0 && (
-						<div className='flex items-center text-right mt-2'>
-							<ul className='list-none m-0 p-0'>
-								{grafik.map((item, index) => (
-									<li key={index}>
-										{dayOfWeekNames[item.dayOfWeek]}: {item.startTime} -{' '}
-										{item.endTime}
-									</li>
-								))}
-							</ul>
+					График работы
+				</Cell>
+				<div className='mt-2 mb-4'>
+					{sortedGrafik && sortedGrafik.length > 0 && (
+						<div className='flex flex-col text-right'>
+							{sortedGrafik.map((item, index) => (
+								<div className='flex justify-between pt-2' key={index}>
+									<div className=' ml-6'>{dayOfWeekNames[item.dayOfWeek]}:</div>
+									<div className=' text-blue-500 mr-6'>
+										{item.startTime} - {item.endTime}
+									</div>
+								</div>
+							))}
 						</div>
 					)}
-				</Cell>
+				</div>
+
 				<Cell
 					before={
 						<IconContainer>
@@ -295,23 +320,23 @@ const Client = ({ user, grafik }: ClientProps) => {
 							/>
 						</IconContainer>
 					}
-					after={`${user.price} руб.`}
 				>
-					Стоимость услуги
+					Услуги
 				</Cell>
-				<Cell
-					before={
-						<IconContainer>
-							<BsGeoAltFill
-								size={32}
-								className='bg-blue-500 rounded-lg p-1'
-								color='white'
-							/>
-						</IconContainer>
-					}
-				>
-					{user.address}
-				</Cell>
+				<div className='mt-2 mb-4'>
+					{service && service.length > 0 && (
+						<div className='flex flex-col pb-4'>
+							{service.map((item, index) => (
+								<div className='flex justify-between pt-2' key={index}>
+									<div className=' pl-6 text-start'>{item.name}</div>
+									<div className=' text-blue-500 pr-6 text-end'>
+										{item.price} {item.valuta}
+									</div>
+								</div>
+							))}
+						</div>
+					)}
+				</div>
 			</Section>
 		</Container>
 	)

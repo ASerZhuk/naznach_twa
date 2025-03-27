@@ -11,7 +11,6 @@ export async function POST(request: Request) {
 			firstName,
 			lastName,
 			userId,
-			price,
 			phone,
 			address,
 			category,
@@ -23,7 +22,6 @@ export async function POST(request: Request) {
 		const requiredFields = [
 			firstName,
 			lastName,
-			price,
 			phone,
 			address,
 			category,
@@ -42,7 +40,6 @@ export async function POST(request: Request) {
 			data: {
 				firstName,
 				lastName,
-				price,
 				phone,
 				address,
 				category,
